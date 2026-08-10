@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Калькулятор выгоды БелУчёт — утильсбор РФ и стоимость сценария</title>
+  <meta name="description" content="Сравните утильсбор РФ по коэффициентам 2027 года со стоимостью основания и сопровождения регистрации автомобиля в Беларуси.">
+  <link rel="canonical" href="https://beluchet.ru/calculator/">
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержанию</a>
+  <header class="topbar">
+    <div class="wrap nav">
+      <a class="brand" href="/"><span class="brand-mark">БУ</span><span>БелУчёт</span></a>
+      <nav class="nav-links" aria-label="Основная навигация"><a aria-current="page" href="/calculator/">Калькулятор</a><a href="/services/">Тарифы</a><a href="/process/">Как проходит</a><a href="/cases/">Примеры</a><a href="/faq/">Вопросы</a></nav>
+      <a class="button small-button nav-cta" href="/contacts/">Получить проверку</a>
+      <button class="nav-toggle" type="button" aria-label="Открыть меню" aria-expanded="false"><span></span></button>
+    </div>
+  </header>
+
+  <main id="main" class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="eyebrow">Предварительная экономика</div><h1>Посчитайте стоимость основания и сопровождения</h1></div>
+        <p>Автомобиль влияет на расчёт платежей и объём проверки, но не является причиной отказа в услуге получения основания.</p>
+      </div>
+
+      <div class="calculator-shell">
+        <form id="calculator-form" class="card calc-form">
+          <div class="calc-intro"><h3>Параметры расчёта</h3><p class="muted">Нужны только характеристики, которые меняют ставку или стоимость сопровождения.</p></div>
+          <div class="calc-body">
+            <section class="form-section">
+              <div class="form-section-title"><h4>Автомобиль и сценарий ввоза в РФ</h4><span>Шаг 1 из 3</span></div>
+              <div class="form-grid three">
+                <label>Тип силовой установки<select name="engineType"><option value="ice">ДВС / иной гибрид</option><option value="ev">Электро / последовательный гибрид</option></select></label>
+                <label>Возраст<select name="age"><option value="under3">до 3 лет</option><option value="over3">старше 3 лет</option></select></label>
+                <label>Режим расчёта РФ<select name="useMode"><option value="personal">Для личного пользования</option><option value="commercial">Обычный коэффициент</option></select></label>
+                <label data-volume-field>Объём двигателя, см³<input name="volume" type="number" min="1" value="3000" inputmode="numeric"></label>
+                <label>Мощность, л.с.<input name="power" type="number" min="1" value="298" inputmode="numeric"></label>
+                <label>Статус автомобиля<select name="origin"><option value="eaeu">Уже в обращении в ЕАЭС</option><option value="outside">Ввозится из-за пределов ЕАЭС</option></select></label>
+                <label>Стоимость автомобиля <span class="field-hint">для объёма проверки</span><input name="price" type="number" min="0" value="90000" inputmode="decimal"></label>
+                <label>Валюта<select name="currency"><option value="USD">USD</option><option value="EUR">EUR</option><option value="RUB">RUB</option><option value="BYN">BYN</option></select></label>
+                <label>Год альтернативного расчёта РФ<select name="calculationYear"><option value="2026" selected>2026</option><option value="2027">2027</option></select></label>
+              </div>
+              <p class="small form-help">Обычные и параллельные гибриды рассчитываются по объёму ДВС. Для электромобилей и последовательных гибридов объём не используется.</p>
+            </section>
+
+            <section class="form-section">
+              <div class="form-section-title"><h4>Основание для регистрации в Беларуси</h4><span>Шаг 2 из 3</span></div>
+              <div class="form-grid">
+                <label>Вариант<select name="basis"><option value="rvp">РВП</option><option value="vng">ВНЖ</option><option value="vng-realestate">ВНЖ: индивидуальный сценарий</option></select></label>
+                <label data-term-field>Срок РВП<select name="term"><option value="1">1 год</option><option value="2">2 года</option><option value="3" selected>3 года</option><option value="4">4 года</option><option value="5">5 лет</option></select></label>
+              </div>
+            </section>
+
+            <section class="form-section">
+              <div class="form-section-title"><h4>Формат сопровождения</h4><span>Шаг 3 из 3</span></div>
+              <label>Тариф<select name="package"><option value="self">Самостоятельный</option><option value="assisted" selected>С сопровождением</option><option value="full">Полный цикл</option></select></label>
+              <div class="check-grid" style="margin-top:14px">
+                <label class="checkline"><input name="gai" type="checkbox"><span>Помощь в ГАИ, если не включена в тариф</span></label>
+                <label class="checkline"><input name="annual" type="checkbox"><span>Контроль ежегодных платежей</span></label>
+                <label class="checkline hidden" data-support-field><input name="support" type="checkbox"><span>Сопровождение поддержания статуса на 12 месяцев</span></label>
+              </div>
+            </section>
+
+            <div class="calc-controls">
+              <p class="small" data-rate-status>Подготавливаем валютный пересчёт.</p>
+              <button class="button secondary small-button" type="button" data-reset-calculator>Сбросить</button>
+            </div>
+          </div>
+        </form>
+
+        <aside class="card calc-result" aria-live="polite">
+          <span class="tag" data-out-basis>РВП на 3 года</span>
+          <div class="result-discount">
+            <span>Не входит в стоимость сценария БелУчёт</span>
+            <strong data-out-util-discount>−0 ₽</strong>
+            <small>ориентир утильсбора РФ для <span data-out-calculation-year>2026</span> года</small>
+          </div>
+          <div class="result-saving"><span data-benefit-label>Потенциальная выгода после выбранного тарифа</span><strong data-out-benefit>0 ₽</strong></div>
+
+          <div class="result-group">
+            <div class="result-group-title">Выбранный сценарий БелУчёт</div>
+            <div class="breakdown">
+              <div><span>Основание и выбранный тариф</span><strong data-out-base>$0</strong></div>
+              <div><span>Дополнительные опции</span><strong data-out-extras>$0</strong></div>
+              <div class="hidden" data-complexity-row><span>Расширенная проверка</span><strong data-out-complexity>$0</strong></div>
+              <div class="breakdown-total"><span>Стоимость сценария</span><strong><span data-out-scenario>$0</span><small data-out-scenario-rub>0 ₽</small></strong></div>
+            </div>
+          </div>
+
+          <div class="result-group util-comparison">
+            <div class="result-group-title">Сравнение с выпуском в обращение в РФ</div>
+            <div class="breakdown">
+              <div><span>Утильсбор РФ в альтернативе</span><strong data-out-util-rf>0 ₽</strong></div>
+              <div class="discount-line"><span>Не входит в стоимость услуги БелУчёт</span><strong data-out-util-discount>−0 ₽</strong></div>
+            </div>
+            <p class="small"><span data-out-rate-kind>обычный коэффициент</span>: <span data-out-formula>коэффициент 0 × 20 000 ₽</span>.</p>
+          </div>
+
+          <p class="small" data-personal-note></p>
+          <p class="small">Автомобиль: <strong data-out-vehicle></strong>. Расчёт РФ: <strong data-out-use></strong>.</p>
+          <div class="result-actions"><a class="button red" href="/contacts/" data-calculator-contact>Проверить расчёт</a><a class="button secondary" href="/services/" aria-label="Сравнить тарифы">Тарифы</a></div>
+        </aside>
+      </div>
+
+      <section class="section compact calculator-notes">
+        <div class="notice hidden" data-origin-warning>Для автомобиля из-за пределов ЕАЭС таможенные платежи и обязательные платежи Беларуси рассчитываются отдельно после проверки страны, даты выпуска и документов.</div>
+        <div class="notice green">Цена автомобиля не прибавляется к сравнению: она одинакова в обоих сценариях. В результат не включены билеты, проживание, трансферы, таможенные и иные внешние платежи.</div>
+        <p class="small source-note">Формула утильсбора РФ: базовая ставка 20 000 ₽ × коэффициент. Год расчёта выбирается пользователем; будущие ставки не выдаются за действующие. Источники: <a href="https://government.ru/docs/all/161708/" target="_blank" rel="noopener noreferrer">Постановление Правительства РФ № 1713</a> и <a href="https://www.consultant.ru/document/cons_doc_LAW_156832/7d2b30cbf7a938c7edc50c48b7c2474e0143d764/" target="_blank" rel="noopener noreferrer">сводная редакция Постановления № 1291</a>. Право на льготный коэффициент и итог подтверждаются по документам.</p>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><div class="wrap"><div class="footer-grid"><div><a class="brand" href="/"><span class="brand-mark">БУ</span><span>БелУчёт</span></a><p style="margin-top:16px">Расчёт и сопровождение регистрации автомобиля в Беларуси.</p></div><div><div class="footer-title">Сервис</div><p><a href="/services/">Тарифы</a></p><p><a href="/process/">Как проходит</a></p></div><div><div class="footer-title">Помощь</div><p><a href="/faq/">Вопросы</a></p><p><a href="/contacts/">Заявка</a></p></div><div><div class="footer-title">Документы</div><p><a href="/privacy/">Политика данных</a></p><p><a href="/disclaimer/">Правовая информация</a></p></div></div><div class="footer-bottom"><span>© <span data-current-year></span> БелУчёт</span><span>Расчёт не является публичной офертой.</span></div></div></footer>
+  <script src="/assets/runtime-config.js"></script><script src="/assets/config.js"></script><script src="/assets/site.js" defer></script>
+</body>
+</html>
