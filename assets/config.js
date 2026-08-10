@@ -59,6 +59,27 @@ window.BELUCHET_CONFIG = {
     statusSupportYear: 4800
   },
   calculator: {
+    annualTaxes: {
+      version: "2026-01-01",
+      rf: {
+        defaultRatePerHpRub: 150,
+        sourceUrl: "https://www.nalog.gov.ru/rn77/taxation/taxes/tr_ul/",
+        calculatorUrl: "https://www.nalog.gov.ru/rn77/service/calc_transport/"
+      },
+      belarus: {
+        sourceUrl: "https://nalog.gov.by/individuals/property_taxation/taxation_of_vehicles/9955/",
+        comfortMultiplier: 10,
+        passengerCarRatesByn: [
+          { maxMassKg: 1500, annualByn: 75 },
+          { maxMassKg: 1750, annualByn: 99 },
+          { maxMassKg: 2000, annualByn: 124 },
+          { maxMassKg: 2250, annualByn: 148 },
+          { maxMassKg: 2500, annualByn: 177 },
+          { maxMassKg: 3000, annualByn: 196 },
+          { maxMassKg: 999999, annualByn: 270 }
+        ]
+      }
+    },
     rfUtil: {
       version: "2026-08-10",
       effectiveFrom: "2026-01-01",

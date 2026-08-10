@@ -22,6 +22,12 @@
     return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(Number.isFinite(value) ? value : 0);
   }
 
+  function yearsLabel(value) {
+    if (value === 1) return "1 год";
+    if (value >= 2 && value <= 4) return `${value} года`;
+    return `${value} лет`;
+  }
+
   function setConfigText() {
     $$('[data-config]').forEach((node) => {
       const path = node.getAttribute("data-config").split(".");
@@ -89,13 +95,17 @@
     return value;
   }
 
-  function signedDiscount(value, currency = "RUB") {
-    return `−${money(Math.abs(value), currency)}`;
-  }
-
   function bandIndex(value, bands) {
     const index = bands.findIndex((maxValue) => value <= maxValue);
     return index === -1 ? bands.length : index;
+  }
+
+  function annualBelarusTax(maxMassKg, comfortVehicle) {
+    const rules = cfg.calculator.annualTaxes.belarus;
+    const band = rules.passengerCarRatesByn.find((item) => maxMassKg <= item.maxMassKg)
+      || rules.passengerCarRatesByn[rules.passengerCarRatesByn.length - 1];
+    const multiplier = comfortVehicle ? rules.comfortMultiplier : 1;
+    return { annualByn: band.annualByn * multiplier, multiplier };
   }
 
   function scenarioCosts(form) {
@@ -180,14 +190,24 @@
     const scenarioRub = scenarioUsd * state.rates.USD_RUB;
     const rfUtil = rfUtilCost(form);
     const benefitRub = rfUtil.amountRub - scenarioRub;
+    const rfTaxRate = Math.max(0, Number(form.elements.rfTaxRate?.value || 0));
+    const rfTaxMultiplier = Math.max(1, Number(form.elements.rfTaxMultiplier?.value || 1));
+    const comparisonYears = Math.max(1, Number(form.elements.comparisonYears?.value || 1));
+    const maxMassKg = Math.max(1, Number(form.elements.maxMassKg?.value || 1));
+    const rfAnnualTaxRub = Math.round(power * rfTaxRate * rfTaxMultiplier);
+    const byAnnualTax = annualBelarusTax(maxMassKg, Boolean(form.elements.belarusComfort?.checked));
+    const byAnnualTaxRub = Math.round(byAnnualTax.annualByn * state.rates.BYN_RUB);
+    const annualSavingRub = rfAnnualTaxRub - byAnnualTaxRub;
+    const annualPeriodSavingRub = annualSavingRub * comparisonYears;
+    const totalBenefitRub = benefitRub + annualPeriodSavingRub;
     const engineType = form.elements.engineType.value;
     const ageLabel = form.elements.age.value === "under3" ? "до 3 лет" : "старше 3 лет";
     const useLabel = form.elements.useMode.value === "personal" ? "личное пользование" : "обычный коэффициент";
     const engineLabel = engineType === "ev" ? "электро / последовательный гибрид" : "ДВС / иной гибрид";
 
     const values = {
+      "[data-out-total-benefit]": money(totalBenefitRub, "RUB"),
       "[data-out-benefit]": money(benefitRub, "RUB"),
-      "[data-out-util-discount]": signedDiscount(rfUtil.amountRub),
       "[data-out-util-rf]": money(rfUtil.amountRub, "RUB"),
       "[data-out-formula]": `коэффициент ${String(rfUtil.coefficient).replace(".", ",")} × ${money(cfg.calculator.rfUtil.baseRateRub, "RUB")}`,
       "[data-out-scenario]": money(scenarioUsd),
@@ -198,15 +218,28 @@
       "[data-out-vehicle]": engineType === "ev" ? `${engineLabel}, ${number(power)} л.с., ${ageLabel}` : `${number(volume)} см³, ${number(power)} л.с., ${ageLabel}`,
       "[data-out-use]": useLabel,
       "[data-out-rate-kind]": rfUtil.reducedPersonal ? "льготный коэффициент для личного пользования" : "обычный коэффициент",
-      "[data-out-calculation-year]": String(rfUtil.calculationYear)
+      "[data-out-rf-annual-tax]": `${money(rfAnnualTaxRub, "RUB")}/год`,
+      "[data-out-by-annual-tax-rub]": `${money(byAnnualTaxRub, "RUB")}/год`,
+      "[data-out-by-annual-tax-byn]": `${money(byAnnualTax.annualByn, "BYN")}/год`,
+      "[data-out-annual-saving]": money(annualSavingRub, "RUB"),
+      "[data-out-annual-period-saving]": money(annualPeriodSavingRub, "RUB"),
+      "[data-out-comparison-period]": yearsLabel(comparisonYears),
+      "[data-out-max-mass]": `${number(maxMassKg)} кг${byAnnualTax.multiplier > 1 ? `, коэффициент ×${byAnnualTax.multiplier}` : ""}`,
+      "[data-out-rf-tax-formula]": `${number(power)} л.с. × ${money(rfTaxRate, "RUB")}/л.с.${rfTaxMultiplier > 1 ? ` × ${rfTaxMultiplier}` : ""}`
     };
     Object.entries(values).forEach(([selector, value]) => {
       $$(selector).forEach((node) => {
         node.textContent = value;
       });
     });
-    const benefitNode = $("[data-out-benefit]");
-    benefitNode?.classList.toggle("negative", benefitRub < 0);
+    $$('[data-out-benefit]').forEach((node) => node.classList.toggle("negative", benefitRub < 0));
+    const totalBenefitNode = $("[data-out-total-benefit]");
+    totalBenefitNode?.classList.toggle("negative", totalBenefitRub < 0);
+    $$('[data-out-annual-saving], [data-out-annual-period-saving]').forEach((node) => {
+      node.classList.toggle("negative", annualSavingRub < 0);
+    });
+    const totalBenefitLabel = $("[data-total-benefit-label]");
+    if (totalBenefitLabel) totalBenefitLabel.textContent = totalBenefitRub >= 0 ? "Итоговая потенциальная выгода" : "Итоговая разница по выбранным условиям";
     const benefitLabel = $("[data-benefit-label]");
     if (benefitLabel) benefitLabel.textContent = benefitRub >= 0 ? "Потенциальная выгода после выбранного тарифа" : "Разница после выбранного тарифа";
     const complexityRow = $("[data-complexity-row]");
@@ -235,7 +268,7 @@
         budget: rawPrice ? `${number(rawPrice)} ${currency}` : "",
         package: packageType,
         basis: form.elements.basis.value === "vng-realestate" ? "vng" : form.elements.basis.value,
-        calculation: `${engineLabel}; ${ageLabel}; ${useLabel}; ориентир утильсбора РФ для ${rfUtil.calculationYear} года: ${money(rfUtil.amountRub, "RUB")}; выбранный сценарий БелУчёт: ${money(scenarioUsd)}; потенциальная разница: ${money(benefitRub, "RUB")}.`
+        calculation: `${engineLabel}; ${ageLabel}; ${useLabel}; ориентир утильсбора РФ для ${rfUtil.calculationYear} года: ${money(rfUtil.amountRub, "RUB")}; выбранный сценарий БелУчёт: ${money(scenarioUsd)}; разовая выгода после тарифа: ${money(benefitRub, "RUB")}; транспортный налог РФ: ${money(rfAnnualTaxRub, "RUB")}/год; транспортный налог РБ при массе ${number(maxMassKg)} кг: ${money(byAnnualTaxRub, "RUB")}/год; итоговая потенциальная выгода за ${yearsLabel(comparisonYears)}: ${money(totalBenefitRub, "RUB")}.`
       });
       contactLink.href = `/contacts/?${params.toString()}`;
     }
@@ -294,7 +327,7 @@
         comment: data.get("comment"),
         client_name: data.get("name"),
         preferred_contact: "auto",
-        calculation_version: cfg.calculator.rfUtil.version,
+        calculation_version: `${cfg.calculator.rfUtil.version}+annual-${cfg.calculator.annualTaxes.version}`,
         utm_source: params.get("utm_source"),
         utm_medium: params.get("utm_medium"),
         utm_campaign: params.get("utm_campaign"),

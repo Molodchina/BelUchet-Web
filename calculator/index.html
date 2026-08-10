@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Калькулятор выгоды БелУчёт — утильсбор РФ и стоимость сценария</title>
-  <meta name="description" content="Сравните утильсбор РФ по коэффициентам 2027 года со стоимостью основания и сопровождения регистрации автомобиля в Беларуси.">
+  <title>Калькулятор итоговой выгоды БелУчёт — разовые и ежегодные платежи</title>
+  <meta name="description" content="Рассчитайте итоговую потенциальную выгоду: утильсбор РФ, стоимость сценария БелУчёт и разницу ежегодного транспортного налога в России и Беларуси.">
   <link rel="canonical" href="https://beluchet.ru/calculator/">
   <link rel="stylesheet" href="/assets/styles.css">
 </head>
@@ -22,16 +22,16 @@
   <main id="main" class="section">
     <div class="wrap">
       <div class="section-head">
-        <div><div class="eyebrow">Предварительная экономика</div><h1>Посчитайте стоимость основания и сопровождения</h1></div>
-        <p>Автомобиль влияет на расчёт платежей и объём проверки, но не является причиной отказа в услуге получения основания.</p>
+        <div><div class="eyebrow">Предварительная экономика</div><h1>Посчитайте итоговую выгоду — сразу и за срок владения</h1></div>
+        <p>Сравним разовый утильсбор, стоимость выбранного сценария и ежегодный транспортный налог в РФ и Беларуси.</p>
       </div>
 
       <div class="calculator-shell">
         <form id="calculator-form" class="card calc-form">
-          <div class="calc-intro"><h3>Параметры расчёта</h3><p class="muted">Нужны только характеристики, которые меняют ставку или стоимость сопровождения.</p></div>
+          <div class="calc-intro"><h3>Параметры расчёта</h3><p class="muted">Заполните четыре коротких шага. Итог пересчитывается сразу.</p></div>
           <div class="calc-body">
             <section class="form-section">
-              <div class="form-section-title"><h4>Автомобиль и сценарий ввоза в РФ</h4><span>Шаг 1 из 3</span></div>
+              <div class="form-section-title"><h4>Автомобиль и сценарий ввоза в РФ</h4><span>Шаг 1 из 4</span></div>
               <div class="form-grid three">
                 <label>Тип силовой установки<select name="engineType"><option value="ice">ДВС / иной гибрид</option><option value="ev">Электро / последовательный гибрид</option></select></label>
                 <label>Возраст<select name="age"><option value="under3">до 3 лет</option><option value="over3">старше 3 лет</option></select></label>
@@ -47,7 +47,19 @@
             </section>
 
             <section class="form-section">
-              <div class="form-section-title"><h4>Основание для регистрации в Беларуси</h4><span>Шаг 2 из 3</span></div>
+              <div class="form-section-title"><h4>Ежегодный транспортный налог</h4><span>Шаг 2 из 4</span></div>
+              <div class="form-grid three">
+                <label>Ставка вашего региона РФ, ₽/л.с.<input name="rfTaxRate" type="number" min="0" step="0.01" value="150" inputmode="decimal"><span class="field-hint">Уточните ставку в калькуляторе ФНС</span></label>
+                <label>Коэффициент РФ<select name="rfTaxMultiplier"><option value="1" selected>Обычный — ×1</option><option value="3">Для авто из перечня — ×3</option></select></label>
+                <label>Разрешённая максимальная масса, кг<input name="maxMassKg" type="number" min="1" value="2500" inputmode="numeric"><span class="field-hint">Из свидетельства о регистрации</span></label>
+                <label>Срок сравнения<select name="comparisonYears"><option value="1">1 год</option><option value="3" selected>3 года</option><option value="5">5 лет</option></select></label>
+              </div>
+              <label class="checkline tax-comfort-check"><input name="belarusComfort" type="checkbox"><span>Автомобиль входит в перечень повышенной комфортности РБ <small>к ставке применяется коэффициент ×10</small></span></label>
+              <p class="small form-help">В РФ налог зависит от региона, мощности, льгот и перечня дорогих автомобилей. Значение 150 ₽/л.с. — демонстрационный пример: замените его своей ставкой из <a href="https://www.nalog.gov.ru/rn77/service/calc_transport/" target="_blank" rel="noopener noreferrer">калькулятора ФНС</a>.</p>
+            </section>
+
+            <section class="form-section">
+              <div class="form-section-title"><h4>Основание для регистрации в Беларуси</h4><span>Шаг 3 из 4</span></div>
               <div class="form-grid">
                 <label>Вариант<select name="basis"><option value="rvp">РВП</option><option value="vng">ВНЖ</option><option value="vng-realestate">ВНЖ: индивидуальный сценарий</option></select></label>
                 <label data-term-field>Срок РВП<select name="term"><option value="1">1 год</option><option value="2">2 года</option><option value="3" selected>3 года</option><option value="4">4 года</option><option value="5">5 лет</option></select></label>
@@ -55,7 +67,7 @@
             </section>
 
             <section class="form-section">
-              <div class="form-section-title"><h4>Формат сопровождения</h4><span>Шаг 3 из 3</span></div>
+              <div class="form-section-title"><h4>Формат сопровождения</h4><span>Шаг 4 из 4</span></div>
               <label>Тариф<select name="package"><option value="self">Самостоятельный</option><option value="assisted" selected>С сопровождением</option><option value="full">Полный цикл</option></select></label>
               <div class="check-grid" style="margin-top:14px">
                 <label class="checkline"><input name="gai" type="checkbox"><span>Помощь в ГАИ, если не включена в тариф</span></label>
@@ -73,42 +85,55 @@
 
         <aside class="card calc-result" aria-live="polite">
           <span class="tag" data-out-basis>РВП на 3 года</span>
-          <div class="result-discount">
-            <span>Не входит в стоимость сценария БелУчёт</span>
-            <strong data-out-util-discount>−0 ₽</strong>
-            <small>ориентир утильсбора РФ для <span data-out-calculation-year>2026</span> года</small>
+          <div class="result-primary">
+            <span data-total-benefit-label>Итоговая потенциальная выгода</span>
+            <strong data-out-total-benefit>0 ₽</strong>
+            <small>за <span data-out-comparison-period>3 года</span>, после стоимости выбранного сценария</small>
           </div>
-          <div class="result-saving"><span data-benefit-label>Потенциальная выгода после выбранного тарифа</span><strong data-out-benefit>0 ₽</strong></div>
+
+          <div class="result-proof-grid">
+            <div><span data-benefit-label>Разовая выгода после тарифа</span><strong data-out-benefit>0 ₽</strong></div>
+            <div><span>Разница ежегодных платежей</span><strong data-out-annual-period-saving>0 ₽</strong><small>за <span data-out-comparison-period>3 года</span></small></div>
+          </div>
 
           <div class="result-group">
-            <div class="result-group-title">Выбранный сценарий БелУчёт</div>
+            <div class="result-group-title">Разовая экономика</div>
+            <div class="breakdown">
+              <div><span>Утильсбор РФ в альтернативе</span><strong data-out-util-rf>0 ₽</strong></div>
+              <div><span>Стоимость сценария БелУчёт</span><strong><span data-out-scenario>$0</span><small data-out-scenario-rub>0 ₽</small></strong></div>
+              <div class="breakdown-total saving-line"><span>Выгода после стоимости сервиса</span><strong data-out-benefit>0 ₽</strong></div>
+            </div>
+          </div>
+
+          <div class="result-group annual-comparison">
+            <div class="result-group-title">Ежегодные транспортные налоги</div>
+            <div class="breakdown">
+              <div><span>Россия</span><strong data-out-rf-annual-tax>0 ₽/год</strong></div>
+              <div><span>Беларусь</span><strong><span data-out-by-annual-tax-rub>0 ₽/год</span><small data-out-by-annual-tax-byn>0 Br/год</small></strong></div>
+              <div class="breakdown-total saving-line"><span>Разница в год</span><strong data-out-annual-saving>0 ₽</strong></div>
+            </div>
+            <p class="small">РФ: <span data-out-rf-tax-formula></span>. РБ: ставка по массе <span data-out-max-mass></span>.</p>
+          </div>
+
+          <details class="result-details">
+            <summary>Состав стоимости БелУчёт</summary>
             <div class="breakdown">
               <div><span>Основание и выбранный тариф</span><strong data-out-base>$0</strong></div>
               <div><span>Дополнительные опции</span><strong data-out-extras>$0</strong></div>
               <div class="hidden" data-complexity-row><span>Расширенная проверка</span><strong data-out-complexity>$0</strong></div>
-              <div class="breakdown-total"><span>Стоимость сценария</span><strong><span data-out-scenario>$0</span><small data-out-scenario-rub>0 ₽</small></strong></div>
             </div>
-          </div>
-
-          <div class="result-group util-comparison">
-            <div class="result-group-title">Сравнение с выпуском в обращение в РФ</div>
-            <div class="breakdown">
-              <div><span>Утильсбор РФ в альтернативе</span><strong data-out-util-rf>0 ₽</strong></div>
-              <div class="discount-line"><span>Не входит в стоимость услуги БелУчёт</span><strong data-out-util-discount>−0 ₽</strong></div>
-            </div>
-            <p class="small"><span data-out-rate-kind>обычный коэффициент</span>: <span data-out-formula>коэффициент 0 × 20 000 ₽</span>.</p>
-          </div>
+          </details>
 
           <p class="small" data-personal-note></p>
-          <p class="small">Автомобиль: <strong data-out-vehicle></strong>. Расчёт РФ: <strong data-out-use></strong>.</p>
-          <div class="result-actions"><a class="button red" href="/contacts/" data-calculator-contact>Проверить расчёт</a><a class="button secondary" href="/services/" aria-label="Сравнить тарифы">Тарифы</a></div>
+          <p class="small">Автомобиль: <strong data-out-vehicle></strong>. Утильсбор РФ: <strong data-out-rate-kind></strong>, <span data-out-formula></span>.</p>
+          <div class="result-actions"><a class="button red" href="/contacts/" data-calculator-contact>Получить точный расчёт</a><a class="button secondary" href="/services/" aria-label="Сравнить тарифы">Тарифы</a></div>
         </aside>
       </div>
 
       <section class="section compact calculator-notes">
         <div class="notice hidden" data-origin-warning>Для автомобиля из-за пределов ЕАЭС таможенные платежи и обязательные платежи Беларуси рассчитываются отдельно после проверки страны, даты выпуска и документов.</div>
-        <div class="notice green">Цена автомобиля не прибавляется к сравнению: она одинакова в обоих сценариях. В результат не включены билеты, проживание, трансферы, таможенные и иные внешние платежи.</div>
-        <p class="small source-note">Формула утильсбора РФ: базовая ставка 20 000 ₽ × коэффициент. Год расчёта выбирается пользователем; будущие ставки не выдаются за действующие. Источники: <a href="https://government.ru/docs/all/161708/" target="_blank" rel="noopener noreferrer">Постановление Правительства РФ № 1713</a> и <a href="https://www.consultant.ru/document/cons_doc_LAW_156832/7d2b30cbf7a938c7edc50c48b7c2474e0143d764/" target="_blank" rel="noopener noreferrer">сводная редакция Постановления № 1291</a>. Право на льготный коэффициент и итог подтверждаются по документам.</p>
+        <div class="notice green">Итоговая выгода = разница утильсбора и стоимости сценария + разница транспортного налога за выбранный срок. Цена автомобиля одинакова в обоих сценариях и в результат не прибавляется.</div>
+        <p class="small source-note">Ежегодное сравнение предварительное: в РФ ставка зависит от региона, мощности, льгот и перечня дорогих автомобилей; в Беларуси — от разрешённой максимальной массы, льгот и перечня повышенной комфортности. Источники: <a href="https://www.nalog.gov.ru/rn77/taxation/taxes/tr_ul/" target="_blank" rel="noopener noreferrer">ФНС России</a>, <a href="https://nalog.gov.by/individuals/property_taxation/taxation_of_vehicles/9955/" target="_blank" rel="noopener noreferrer">МНС Беларуси</a>. Формула утильсбора: 20 000 ₽ × коэффициент; источники — <a href="https://government.ru/docs/all/161708/" target="_blank" rel="noopener noreferrer">Постановление № 1713</a> и <a href="https://www.consultant.ru/document/cons_doc_LAW_156832/7d2b30cbf7a938c7edc50c48b7c2474e0143d764/" target="_blank" rel="noopener noreferrer">Постановление № 1291</a>. Итог подтверждается по документам.</p>
       </section>
     </div>
   </main>
