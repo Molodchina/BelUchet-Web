@@ -28,52 +28,48 @@
 
       <div class="calculator-shell">
         <form id="calculator-form" class="card calc-form">
-          <div class="calc-intro"><h3>Параметры расчёта</h3><p class="muted">Заполните четыре коротких шага. Итог пересчитывается сразу.</p></div>
+          <div class="calc-intro"><h3>Параметры расчёта</h3><p class="muted">Укажите автомобиль и выберите тариф. Остальные допущения калькулятор применит автоматически.</p></div>
           <div class="calc-body">
             <section class="form-section">
-              <div class="form-section-title"><h4>Автомобиль и сценарий ввоза в РФ</h4><span>Шаг 1 из 4</span></div>
+              <div class="form-section-title"><h4>Автомобиль</h4><span>Шаг 1 из 2</span></div>
               <div class="form-grid three">
-                <label>Тип силовой установки<select name="engineType"><option value="ice">ДВС / иной гибрид</option><option value="ev">Электро / последовательный гибрид</option></select></label>
-                <label>Возраст<select name="age"><option value="under3">до 3 лет</option><option value="over3">старше 3 лет</option></select></label>
-                <label>Режим расчёта РФ<select name="useMode"><option value="personal">Для личного пользования</option><option value="commercial">Обычный коэффициент</option></select></label>
-                <label data-volume-field>Объём двигателя, см³<input name="volume" type="number" min="1" value="3000" inputmode="numeric"></label>
-                <label>Мощность, л.с.<input name="power" type="number" min="1" value="298" inputmode="numeric"></label>
-                <label>Статус автомобиля<select name="origin"><option value="eaeu">Уже в обращении в ЕАЭС</option><option value="outside">Ввозится из-за пределов ЕАЭС</option></select></label>
-                <label>Стоимость автомобиля <span class="field-hint">для объёма проверки</span><input name="price" type="number" min="0" value="90000" inputmode="decimal"></label>
-                <label>Валюта<select name="currency"><option value="USD">USD</option><option value="EUR">EUR</option><option value="RUB">RUB</option><option value="BYN">BYN</option></select></label>
-                <label>Год альтернативного расчёта РФ<select name="calculationYear"><option value="2026" selected>2026</option><option value="2027">2027</option></select></label>
+                <label><span class="label-with-help">Тип двигателя <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">От типа двигателя зависит таблица коэффициентов утильсбора. Обычный гибрид считается как автомобиль с ДВС.</span></span></span><select name="engineType"><option value="ice">ДВС / обычный гибрид</option><option value="ev">Электро / последовательный гибрид</option></select></label>
+                <label><span class="label-with-help">Возраст <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">Для автомобилей до трёх лет и старше действуют разные коэффициенты утильсбора.</span></span></span><select name="age"><option value="under3">до 3 лет</option><option value="over3">старше 3 лет</option></select></label>
+                <label data-volume-field><span class="label-with-help">Объём двигателя, см³ <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">Для ДВС объём определяет строку таблицы утильсбора. Для электромобиля поле скрывается.</span></span></span><input name="volume" type="number" min="1" value="3000" inputmode="numeric"></label>
+                <label><span class="label-with-help">Мощность, л.с. <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">Мощность влияет на утильсбор и выбирает медианную ставку транспортного налога РФ.</span></span></span><input name="power" type="number" min="1" value="298" inputmode="numeric"></label>
+                <label><span class="label-with-help">Стоимость, USD <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">При цене выше $100 000 модель относит автомобиль к повышенной комфортности в Беларуси и применяет коэффициент ×10. Это предварительное допущение, не проверка официального перечня.</span></span></span><input name="price" type="number" min="0" value="90000" inputmode="decimal"></label>
+                <label><span class="label-with-help">Год расчёта РФ <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">Выберите год, в котором сравнивается утильсбор по действующей таблице коэффициентов.</span></span></span><select name="calculationYear"><option value="2026" selected>2026</option><option value="2027">2027</option></select></label>
               </div>
-              <p class="small form-help">Обычные и параллельные гибриды рассчитываются по объёму ДВС. Для электромобилей и последовательных гибридов объём не используется.</p>
+              <p class="small form-help">Режим ввоза и статус автомобиля убраны из формы. Предварительный расчёт утильсбора показывает обычный коэффициент; применимость льгот проверяется отдельно по документам.</p>
             </section>
 
             <section class="form-section">
-              <div class="form-section-title"><h4>Ежегодный транспортный налог</h4><span>Шаг 2 из 4</span></div>
-              <div class="form-grid three">
-                <label>Ставка вашего региона РФ, ₽/л.с.<input name="rfTaxRate" type="number" min="0" step="0.01" value="150" inputmode="decimal"><span class="field-hint">Уточните ставку в калькуляторе ФНС</span></label>
-                <label>Коэффициент РФ<select name="rfTaxMultiplier"><option value="1" selected>Обычный — ×1</option><option value="3">Для авто из перечня — ×3</option></select></label>
-                <label>Разрешённая максимальная масса, кг<input name="maxMassKg" type="number" min="1" value="2500" inputmode="numeric"><span class="field-hint">Из свидетельства о регистрации</span></label>
-                <label>Срок сравнения<select name="comparisonYears"><option value="1">1 год</option><option value="3" selected>3 года</option><option value="5">5 лет</option></select></label>
+              <div class="form-section-title"><h4><span class="label-with-help">Основание для регистрации в Беларуси <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">Выберите формат получения основания и объём нашей помощи. В предварительном расчёте используется РВП на один год; подходящее основание подтвердим после проверки.</span></span></span></h4><span>Шаг 2 из 2</span></div>
+              <input name="basis" type="hidden" value="rvp">
+              <input name="term" type="hidden" value="1">
+              <div class="tariff-choice-grid">
+                <label class="tariff-choice"><input name="package" type="radio" value="self" checked><span><strong>Самостоятельный</strong><small>Документы и маршрут действий</small><b>$3 690</b></span></label>
+                <label class="tariff-choice"><input name="package" type="radio" value="assisted"><span><strong>С сопровождением</strong><small>Помощь на ключевых этапах</small><b>$4 590</b></span></label>
+                <label class="tariff-choice"><input name="package" type="radio" value="full"><span><strong>Полный цикл</strong><small>Максимум задач берём на себя</small><b>$5 890</b></span></label>
               </div>
-              <label class="checkline tax-comfort-check"><input name="belarusComfort" type="checkbox"><span>Автомобиль входит в перечень повышенной комфортности РБ <small>к ставке применяется коэффициент ×10</small></span></label>
-              <p class="small form-help">В РФ налог зависит от региона, мощности, льгот и перечня дорогих автомобилей. Значение 150 ₽/л.с. — демонстрационный пример: замените его своей ставкой из <a href="https://www.nalog.gov.ru/rn77/service/calc_transport/" target="_blank" rel="noopener noreferrer">калькулятора ФНС</a>.</p>
             </section>
 
             <section class="form-section">
-              <div class="form-section-title"><h4>Основание для регистрации в Беларуси</h4><span>Шаг 3 из 4</span></div>
+              <div class="form-section-title"><h4>Период сравнения</h4></div>
               <div class="form-grid">
-                <label>Вариант<select name="basis"><option value="rvp">РВП</option><option value="vng">ВНЖ</option><option value="vng-realestate">ВНЖ: индивидуальный сценарий</option></select></label>
-                <label data-term-field>Срок РВП<select name="term"><option value="1">1 год</option><option value="2">2 года</option><option value="3" selected>3 года</option><option value="4">4 года</option><option value="5">5 лет</option></select></label>
+                <label><span class="label-with-help">Показывать выгоду за <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">К разовой выгоде прибавляется разница транспортного налога РФ и Беларуси за выбранное число лет.</span></span></span><select name="comparisonYears"><option value="1">1 год</option><option value="3" selected>3 года</option><option value="5">5 лет</option></select></label>
               </div>
-            </section>
-
-            <section class="form-section">
-              <div class="form-section-title"><h4>Формат сопровождения</h4><span>Шаг 4 из 4</span></div>
-              <label>Тариф<select name="package"><option value="self">Самостоятельный</option><option value="assisted" selected>С сопровождением</option><option value="full">Полный цикл</option></select></label>
-              <div class="check-grid" style="margin-top:14px">
-                <label class="checkline"><input name="gai" type="checkbox"><span>Помощь в ГАИ, если не включена в тариф</span></label>
-                <label class="checkline"><input name="annual" type="checkbox"><span>Контроль ежегодных платежей</span></label>
-                <label class="checkline hidden" data-support-field><input name="support" type="checkbox"><span>Сопровождение поддержания статуса на 12 месяцев</span></label>
-              </div>
+              <details class="calc-disclosure">
+                <summary><span>Уточнить массу автомобиля</span><small data-mass-summary>типовая масса 2 500 кг</small></summary>
+                <div class="disclosure-body"><label><span class="label-with-help">Разрешённая максимальная масса, кг <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">В Беларуси годовая ставка зависит от разрешённой максимальной массы из регистрационного документа. По умолчанию взят типовой ориентир 2 500 кг.</span></span></span><input name="maxMassKg" type="number" min="1" value="2500" inputmode="numeric"></label></div>
+              </details>
+              <details class="calc-disclosure">
+                <summary><span>Дополнительные услуги</span><small data-extras-summary>не выбраны</small></summary>
+                <div class="disclosure-body check-grid">
+                  <label class="checkline"><input name="gai" type="checkbox"><span><span class="label-with-help">Помощь в ГАИ <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">Добавляется к тарифу «Самостоятельный». В более полных тарифах помощь уже входит в формат сопровождения.</span></span></span><small>Для тарифа «Самостоятельный» — $590</small></span></label>
+                  <label class="checkline"><input name="annual" type="checkbox"><span><span class="label-with-help">Контроль ежегодных платежей <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">Дополнительное напоминание и проверка ежегодных обязательных платежей по выбранному сценарию.</span></span></span><small>$290</small></span></label>
+                </div>
+              </details>
             </section>
 
             <div class="calc-controls">
@@ -84,7 +80,7 @@
         </form>
 
         <aside class="card calc-result" aria-live="polite">
-          <span class="tag" data-out-basis>РВП на 3 года</span>
+          <span class="tag" data-out-basis>Самостоятельный · РВП 1 год</span>
           <div class="result-primary">
             <span data-total-benefit-label>Итоговая потенциальная выгода</span>
             <strong data-out-total-benefit>0 ₽</strong>
@@ -112,28 +108,27 @@
               <div><span>Беларусь</span><strong><span data-out-by-annual-tax-rub>0 ₽/год</span><small data-out-by-annual-tax-byn>0 Br/год</small></strong></div>
               <div class="breakdown-total saving-line"><span>Разница в год</span><strong data-out-annual-saving>0 ₽</strong></div>
             </div>
-            <p class="small">РФ: <span data-out-rf-tax-formula></span>. РБ: ставка по массе <span data-out-max-mass></span>.</p>
+            <p class="small">РФ: <span data-out-rf-tax-formula></span>. РБ: <span data-out-max-mass></span>, <span data-out-comfort>обычная категория</span>.</p>
           </div>
 
           <details class="result-details">
             <summary>Состав стоимости БелУчёт</summary>
             <div class="breakdown">
-              <div><span>Основание и выбранный тариф</span><strong data-out-base>$0</strong></div>
+              <div><span>Выбранный тариф</span><strong data-out-base>$0</strong></div>
               <div><span>Дополнительные опции</span><strong data-out-extras>$0</strong></div>
               <div class="hidden" data-complexity-row><span>Расширенная проверка</span><strong data-out-complexity>$0</strong></div>
             </div>
           </details>
 
-          <p class="small" data-personal-note></p>
           <p class="small">Автомобиль: <strong data-out-vehicle></strong>. Утильсбор РФ: <strong data-out-rate-kind></strong>, <span data-out-formula></span>.</p>
           <div class="result-actions"><a class="button red" href="/contacts/" data-calculator-contact>Получить точный расчёт</a><a class="button secondary" href="/services/" aria-label="Сравнить тарифы">Тарифы</a></div>
         </aside>
       </div>
 
       <section class="section compact calculator-notes">
-        <div class="notice hidden" data-origin-warning>Для автомобиля из-за пределов ЕАЭС таможенные платежи и обязательные платежи Беларуси рассчитываются отдельно после проверки страны, даты выпуска и документов.</div>
         <div class="notice green">Итоговая выгода = разница утильсбора и стоимости сценария + разница транспортного налога за выбранный срок. Цена автомобиля одинакова в обоих сценариях и в результат не прибавляется.</div>
-        <p class="small source-note">Ежегодное сравнение предварительное: в РФ ставка зависит от региона, мощности, льгот и перечня дорогих автомобилей; в Беларуси — от разрешённой максимальной массы, льгот и перечня повышенной комфортности. Источники: <a href="https://www.nalog.gov.ru/rn77/taxation/taxes/tr_ul/" target="_blank" rel="noopener noreferrer">ФНС России</a>, <a href="https://nalog.gov.by/individuals/property_taxation/taxation_of_vehicles/9955/" target="_blank" rel="noopener noreferrer">МНС Беларуси</a>. Формула утильсбора: 20 000 ₽ × коэффициент; источники — <a href="https://government.ru/docs/all/161708/" target="_blank" rel="noopener noreferrer">Постановление № 1713</a> и <a href="https://www.consultant.ru/document/cons_doc_LAW_156832/7d2b30cbf7a938c7edc50c48b7c2474e0143d764/" target="_blank" rel="noopener noreferrer">Постановление № 1291</a>. Итог подтверждается по документам.</p>
+        <p class="legal-inline"><strong>Калькулятор не является публичной офертой, официальным расчётом платежей или гарантией экономии.</strong> Результат проверяется по документам; окончательная цена услуги указывается в рублях в индивидуальной смете и договоре. <a href="/disclaimer/">Все ограничения расчёта</a>.</p>
+        <p class="small source-note">Ежегодное сравнение предварительное. Для РФ применяется медианная модель ставок 2026 года по диапазону мощности, а не ставка конкретного региона. Для Беларуси по умолчанию используется масса 2 500 кг; цена выше $100 000 автоматически включает модель повышенной комфортности ×10. Фактическую ставку, льготы и официальный перечень проверяем по документам. Источники: <a href="https://www.nalog.gov.ru/rn77/taxation/taxes/tr_ul/" target="_blank" rel="noopener noreferrer">ФНС России</a>, <a href="https://nalog.gov.by/individuals/property_taxation/taxation_of_vehicles/9955/" target="_blank" rel="noopener noreferrer">МНС Беларуси</a>. Формула утильсбора: 20 000 ₽ × коэффициент; источники — <a href="https://government.ru/docs/all/161708/" target="_blank" rel="noopener noreferrer">Постановление № 1713</a> и <a href="https://www.consultant.ru/document/cons_doc_LAW_156832/7d2b30cbf7a938c7edc50c48b7c2474e0143d764/" target="_blank" rel="noopener noreferrer">Постановление № 1291</a>. Итог подтверждается по документам.</p>
       </section>
     </div>
   </main>

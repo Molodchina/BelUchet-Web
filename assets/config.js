@@ -10,8 +10,21 @@ window.BELUCHET_CONFIG = {
     privacyEmail: "privacy@beluchet.ru",
     apiBaseUrl: window.BELUCHET_API_BASE_URL || (["127.0.0.1", "localhost"].includes(window.location.hostname) ? "http://127.0.0.1:8091" : "")
   },
+  legal: {
+    privacyPolicyVersion: "2026-08-11",
+    personalDataConsentVersion: "2026-08-11",
+    disclaimerVersion: "2026-08-11",
+    operator: {
+      // Replace these values with the operator's verified legal details before publication.
+      fullName: "",
+      inn: "",
+      registrationNumber: "",
+      address: "",
+      workingHours: "Пн–Пт, 10:00–18:00 (МСК)"
+    }
+  },
   cookies: {
-    policyVersion: "2026-08-10",
+    policyVersion: "2026-08-11",
     consentName: "beluchet_cookie_consent_v1",
     maxAgeDays: 180
   },
@@ -60,14 +73,23 @@ window.BELUCHET_CONFIG = {
   },
   calculator: {
     annualTaxes: {
-      version: "2026-01-01",
+      version: "2026-08-11-median-v1",
       rf: {
-        defaultRatePerHpRub: 150,
+        model: "median-power-band-2026",
+        medianRateBandsRub: [
+          { maxPowerHp: 100, ratePerHpRub: 10 },
+          { maxPowerHp: 150, ratePerHpRub: 25 },
+          { maxPowerHp: 200, ratePerHpRub: 50 },
+          { maxPowerHp: 250, ratePerHpRub: 75 },
+          { maxPowerHp: 99999, ratePerHpRub: 150 }
+        ],
         sourceUrl: "https://www.nalog.gov.ru/rn77/taxation/taxes/tr_ul/",
         calculatorUrl: "https://www.nalog.gov.ru/rn77/service/calc_transport/"
       },
       belarus: {
         sourceUrl: "https://nalog.gov.by/individuals/property_taxation/taxation_of_vehicles/9955/",
+        defaultMassKg: 2500,
+        comfortPriceThresholdUsd: 100000,
         comfortMultiplier: 10,
         passengerCarRatesByn: [
           { maxMassKg: 1500, annualByn: 75 },

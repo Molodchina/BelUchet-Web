@@ -28,6 +28,42 @@
     return `${value} лет`;
   }
 
+  function renderPriceReferences() {
+    $$(".price, .price-rail .rail-item strong, .term-table td, .tariff-choice b").forEach((node) => {
+      if (!node.dataset.priceUsd) {
+        const source = node.textContent.trim();
+        const match = source.match(/\$\s*([\d\s]+)/);
+        if (!match) return;
+        node.dataset.priceUsd = match[1].replace(/\s/g, "");
+        node.dataset.priceAnnual = String(/\/год/.test(source));
+      }
+      const rubles = Number(node.dataset.priceUsd) * state.rates.USD_RUB;
+      let reference = $(".price-rub-reference", node);
+      if (!reference) {
+        reference = document.createElement("small");
+        reference.className = "price-rub-reference";
+        node.appendChild(reference);
+      }
+      reference.textContent = `≈ ${money(rubles, "RUB")}${node.dataset.priceAnnual === "true" ? "/год" : ""}`;
+    });
+  }
+
+  async function initPriceReferences() {
+    if (!$(".price, .price-rail .rail-item strong, .term-table td, .tariff-choice b")) return;
+    renderPriceReferences();
+    if ($("#calculator-form")) return;
+    try {
+      const response = await fetch(apiUrl("/api/v1/rates"), { cache: "no-store" });
+      const data = await response.json();
+      if (response.ok && data?.rates?.USD_RUB) {
+        state.rates = { ...state.rates, ...data.rates };
+        renderPriceReferences();
+      }
+    } catch (error) {
+      // The visible ruble reference remains based on the dated fallback rate.
+    }
+  }
+
   function setConfigText() {
     $$('[data-config]').forEach((node) => {
       const path = node.getAttribute("data-config").split(".");
@@ -37,6 +73,31 @@
     });
     $$('[data-current-year]').forEach((node) => {
       node.textContent = String(new Date().getFullYear());
+    });
+  }
+
+  function operatorDetailsReady() {
+    const operator = cfg.legal?.operator || {};
+    return [operator.fullName, operator.inn, operator.registrationNumber, operator.address].every((value) => String(value || "").trim());
+  }
+
+  function initLegalDetails() {
+    const operator = cfg.legal?.operator || {};
+    const operatorReady = operatorDetailsReady();
+    $$('[data-operator-name]').forEach((node) => {
+      node.textContent = operator.fullName || cfg.brand.company;
+    });
+    $$('[data-operator-details]').forEach((node) => {
+      node.hidden = !operatorReady;
+    });
+    $$('[data-operator-missing]').forEach((node) => {
+      node.hidden = operatorReady;
+    });
+    $$('[data-config-email]').forEach((node) => {
+      const path = node.getAttribute("data-config-email").split(".");
+      let value = cfg;
+      for (const key of path) value = value && value[key];
+      if (value) node.href = `mailto:${value}`;
     });
   }
 
@@ -65,6 +126,7 @@
       if (apiResponse.ok && apiData?.rates) {
         state.rates = { ...state.rates, ...apiData.rates };
         if (status) status.textContent = apiData.source === "CBR" ? "Валютный пересчёт обновлён по курсу ЦБ РФ." : "Для валютного пересчёта используется резервный курс. Итог подтвердит менеджер.";
+        renderPriceReferences();
         calculate();
         return;
       }
@@ -80,19 +142,12 @@
       };
       state.rates.USD_RUB = findRate("USD") || state.rates.USD_RUB;
       state.rates.EUR_RUB = findRate("EUR") || state.rates.EUR_RUB;
+      renderPriceReferences();
       if (status) status.textContent = "Валютный пересчёт обновлён по курсу ЦБ РФ.";
     } catch (error) {
       if (status) status.textContent = "Для валютного пересчёта используется резервный курс. Итог подтвердит менеджер.";
     }
     calculate();
-  }
-
-  function toUsd(value, currency) {
-    if (currency === "USD") return value;
-    if (currency === "EUR") return value * state.rates.EUR_RUB / state.rates.USD_RUB;
-    if (currency === "RUB") return value / state.rates.USD_RUB;
-    if (currency === "BYN") return value * state.rates.BYN_RUB / state.rates.USD_RUB;
-    return value;
   }
 
   function bandIndex(value, bands) {
@@ -109,18 +164,16 @@
   }
 
   function scenarioCosts(form) {
-    const basis = form.elements.basis.value;
     const packageType = form.elements.package.value;
-    const pricingKey = basis === "vng-realestate" ? "vngRealEstate" : basis;
-    const term = basis === "rvp" ? Number(form.elements.term.value || 1) : 1;
-    const base = cfg.pricingUsd.scenarioPackages[pricingKey][packageType]
-      + (basis === "rvp" ? cfg.pricingUsd.rvpExtraYear * (term - 1) : 0);
     const labels = {
-      rvp: `РВП на ${term} ${term === 1 ? "год" : term < 5 ? "года" : "лет"}`,
-      vng: "ВНЖ",
-      "vng-realestate": "ВНЖ: индивидуальный сценарий"
+      self: "Самостоятельный",
+      assisted: "С сопровождением",
+      full: "Полный цикл"
     };
-    return { base, label: labels[basis] };
+    return {
+      base: cfg.pricingUsd.scenarioPackages.rvp[packageType],
+      label: `${labels[packageType]} · РВП 1 год`
+    };
   }
 
   function complexityPrice(carPriceUsd, power) {
@@ -134,19 +187,11 @@
     const rules = cfg.calculator.rfUtil;
     const age = form.elements.age.value === "under3" ? "under3" : "over3";
     const engineType = form.elements.engineType.value;
-    const useMode = form.elements.useMode.value;
     const power = Math.max(0, Number(form.elements.power.value || 0));
     const volume = Math.max(0, Number(form.elements.volume.value || 0));
-    const personal = rules.personalUse;
-    const reducedPersonal = useMode === "personal" && (
-      (engineType === "ev" && power <= personal.evMaxPowerHp)
-      || (engineType === "ice" && volume <= personal.iceMaxVolume && power <= personal.iceMaxPowerHp)
-    );
 
     let coefficient;
-    if (reducedPersonal) {
-      coefficient = personal[age];
-    } else if (engineType === "ev") {
+    if (engineType === "ev") {
       coefficient = rules.evCommercialCoefficients[age][bandIndex(power, rules.evPowerBandsHp)];
     } else {
       const volumeRow = rules.iceCommercialCoefficients.find((row) => volume <= row.maxVolume)
@@ -162,20 +207,22 @@
     return {
       coefficient,
       amountRub: Math.round(coefficient * rules.baseRateRub),
-      reducedPersonal,
       age,
-      useMode,
       calculationYear
     };
+  }
+
+  function medianRfTaxRate(power) {
+    const bands = cfg.calculator.annualTaxes.rf.medianRateBandsRub;
+    const band = bands.find((item) => power <= item.maxPowerHp) || bands[bands.length - 1];
+    return band.ratePerHpRub;
   }
 
   function calculate() {
     const form = $("#calculator-form");
     if (!form) return;
 
-    const rawPrice = Number(form.elements.price.value || 0);
-    const currency = form.elements.currency.value;
-    const carPriceUsd = toUsd(rawPrice, currency);
+    const carPriceUsd = Math.max(0, Number(form.elements.price.value || 0));
     const volume = Number(form.elements.volume.value || 0);
     const power = Number(form.elements.power.value || 0);
     const basis = scenarioCosts(form);
@@ -183,26 +230,24 @@
     const packageType = form.elements.package.value;
     const gai = form.elements.gai?.checked && packageType === "self" ? cfg.pricingUsd.gaiHelp : 0;
     const annual = form.elements.annual?.checked ? cfg.pricingUsd.annualControl : 0;
-    const support = form.elements.support?.checked && form.elements.basis.value !== "rvp" ? cfg.pricingUsd.statusSupportYear : 0;
-    const optionalExtras = gai + annual + support;
+    const optionalExtras = gai + annual;
     const extras = complexity + optionalExtras;
     const scenarioUsd = basis.base + extras;
     const scenarioRub = scenarioUsd * state.rates.USD_RUB;
     const rfUtil = rfUtilCost(form);
     const benefitRub = rfUtil.amountRub - scenarioRub;
-    const rfTaxRate = Math.max(0, Number(form.elements.rfTaxRate?.value || 0));
-    const rfTaxMultiplier = Math.max(1, Number(form.elements.rfTaxMultiplier?.value || 1));
+    const rfTaxRate = medianRfTaxRate(power);
     const comparisonYears = Math.max(1, Number(form.elements.comparisonYears?.value || 1));
-    const maxMassKg = Math.max(1, Number(form.elements.maxMassKg?.value || 1));
-    const rfAnnualTaxRub = Math.round(power * rfTaxRate * rfTaxMultiplier);
-    const byAnnualTax = annualBelarusTax(maxMassKg, Boolean(form.elements.belarusComfort?.checked));
+    const maxMassKg = Math.max(1, Number(form.elements.maxMassKg?.value || cfg.calculator.annualTaxes.belarus.defaultMassKg));
+    const comfortVehicle = carPriceUsd > cfg.calculator.annualTaxes.belarus.comfortPriceThresholdUsd;
+    const rfAnnualTaxRub = Math.round(power * rfTaxRate);
+    const byAnnualTax = annualBelarusTax(maxMassKg, comfortVehicle);
     const byAnnualTaxRub = Math.round(byAnnualTax.annualByn * state.rates.BYN_RUB);
     const annualSavingRub = rfAnnualTaxRub - byAnnualTaxRub;
     const annualPeriodSavingRub = annualSavingRub * comparisonYears;
     const totalBenefitRub = benefitRub + annualPeriodSavingRub;
     const engineType = form.elements.engineType.value;
     const ageLabel = form.elements.age.value === "under3" ? "до 3 лет" : "старше 3 лет";
-    const useLabel = form.elements.useMode.value === "personal" ? "личное пользование" : "обычный коэффициент";
     const engineLabel = engineType === "ev" ? "электро / последовательный гибрид" : "ДВС / иной гибрид";
 
     const values = {
@@ -216,16 +261,16 @@
       "[data-out-extras]": money(optionalExtras),
       "[data-out-basis]": basis.label,
       "[data-out-vehicle]": engineType === "ev" ? `${engineLabel}, ${number(power)} л.с., ${ageLabel}` : `${number(volume)} см³, ${number(power)} л.с., ${ageLabel}`,
-      "[data-out-use]": useLabel,
-      "[data-out-rate-kind]": rfUtil.reducedPersonal ? "льготный коэффициент для личного пользования" : "обычный коэффициент",
+      "[data-out-rate-kind]": "обычный коэффициент",
       "[data-out-rf-annual-tax]": `${money(rfAnnualTaxRub, "RUB")}/год`,
       "[data-out-by-annual-tax-rub]": `${money(byAnnualTaxRub, "RUB")}/год`,
       "[data-out-by-annual-tax-byn]": `${money(byAnnualTax.annualByn, "BYN")}/год`,
       "[data-out-annual-saving]": money(annualSavingRub, "RUB"),
       "[data-out-annual-period-saving]": money(annualPeriodSavingRub, "RUB"),
       "[data-out-comparison-period]": yearsLabel(comparisonYears),
-      "[data-out-max-mass]": `${number(maxMassKg)} кг${byAnnualTax.multiplier > 1 ? `, коэффициент ×${byAnnualTax.multiplier}` : ""}`,
-      "[data-out-rf-tax-formula]": `${number(power)} л.с. × ${money(rfTaxRate, "RUB")}/л.с.${rfTaxMultiplier > 1 ? ` × ${rfTaxMultiplier}` : ""}`
+      "[data-out-max-mass]": `масса ${number(maxMassKg)} кг${byAnnualTax.multiplier > 1 ? `, коэффициент ×${byAnnualTax.multiplier}` : ""}`,
+      "[data-out-comfort]": comfortVehicle ? "повышенная комфортность по порогу цены" : "обычная категория по порогу цены",
+      "[data-out-rf-tax-formula]": `${number(power)} л.с. × ${money(rfTaxRate, "RUB")}/л.с. (медианная модель)`
     };
     Object.entries(values).forEach(([selector, value]) => {
       $$(selector).forEach((node) => {
@@ -246,29 +291,24 @@
     if (complexityRow) complexityRow.classList.toggle("hidden", complexity === 0);
     const complexityNode = $("[data-out-complexity]");
     if (complexityNode) complexityNode.textContent = money(complexity);
-    const termField = $("[data-term-field]");
-    if (termField) termField.classList.toggle("hidden", form.elements.basis.value !== "rvp");
-    const supportField = $("[data-support-field]");
-    if (supportField) supportField.classList.toggle("hidden", form.elements.basis.value === "rvp");
     const volumeField = $("[data-volume-field]");
     if (volumeField) volumeField.classList.toggle("hidden", engineType === "ev");
-    const originWarning = $("[data-origin-warning]");
-    if (originWarning) originWarning.classList.toggle("hidden", form.elements.origin.value === "eaeu");
-    const personalNote = $("[data-personal-note]");
-    if (personalNote) {
-      personalNote.textContent = rfUtil.reducedPersonal
-        ? "Применён льготный коэффициент. Право на него зависит от обстоятельств ввоза и подтверждается по документам."
-        : "Применён обычный коэффициент: параметры автомобиля не подпадают под льготный диапазон либо выбран не личный ввоз.";
+    const massSummary = $("[data-mass-summary]");
+    if (massSummary) massSummary.textContent = `${number(maxMassKg)} кг`;
+    const extrasSummary = $("[data-extras-summary]");
+    if (extrasSummary) {
+      const selectedExtras = [form.elements.gai?.checked, form.elements.annual?.checked].filter(Boolean).length;
+      extrasSummary.textContent = selectedExtras ? `выбрано: ${selectedExtras}` : "не выбраны";
     }
 
     const contactLink = $("[data-calculator-contact]");
     if (contactLink) {
       const params = new URLSearchParams({
         car: engineType === "ev" ? `${engineLabel}, ${power} л.с.` : `${volume} см³, ${power} л.с.`,
-        budget: rawPrice ? `${number(rawPrice)} ${currency}` : "",
+        budget: carPriceUsd ? `${number(carPriceUsd)} USD` : "",
         package: packageType,
         basis: form.elements.basis.value === "vng-realestate" ? "vng" : form.elements.basis.value,
-        calculation: `${engineLabel}; ${ageLabel}; ${useLabel}; ориентир утильсбора РФ для ${rfUtil.calculationYear} года: ${money(rfUtil.amountRub, "RUB")}; выбранный сценарий БелУчёт: ${money(scenarioUsd)}; разовая выгода после тарифа: ${money(benefitRub, "RUB")}; транспортный налог РФ: ${money(rfAnnualTaxRub, "RUB")}/год; транспортный налог РБ при массе ${number(maxMassKg)} кг: ${money(byAnnualTaxRub, "RUB")}/год; итоговая потенциальная выгода за ${yearsLabel(comparisonYears)}: ${money(totalBenefitRub, "RUB")}.`
+        calculation: `${engineLabel}; ${ageLabel}; цена ${money(carPriceUsd)}; ориентир утильсбора РФ для ${rfUtil.calculationYear} года: ${money(rfUtil.amountRub, "RUB")}; тариф ${basis.label}: ${money(scenarioUsd)}; разовая выгода после тарифа: ${money(benefitRub, "RUB")}; транспортный налог РФ по медианной ставке ${money(rfTaxRate, "RUB")}/л.с.: ${money(rfAnnualTaxRub, "RUB")}/год; транспортный налог РБ при массе ${number(maxMassKg)} кг (${comfortVehicle ? "повышенная комфортность по порогу цены" : "обычная категория"}): ${money(byAnnualTaxRub, "RUB")}/год; итоговая потенциальная выгода за ${yearsLabel(comparisonYears)}: ${money(totalBenefitRub, "RUB")}.`
       });
       contactLink.href = `/contacts/?${params.toString()}`;
     }
@@ -302,6 +342,7 @@
   function initLeadForm() {
     const form = $("#lead-form");
     if (!form) return;
+    form.elements.consent?.addEventListener("change", () => form.elements.consent.setCustomValidity(""));
     const params = new URLSearchParams(window.location.search);
     for (const name of ["car", "budget", "package", "basis"]) {
       if (params.get(name) && form.elements[name]) form.elements[name].value = params.get(name);
@@ -309,10 +350,25 @@
     if (params.get("calculation") && form.elements.comment && !form.elements.comment.value) {
       form.elements.comment.value = `Предварительный расчёт: ${params.get("calculation")}`;
     }
+    if (!operatorDetailsReady()) {
+      const submit = form.querySelector('[type="submit"]');
+      if (submit) {
+        submit.disabled = true;
+        submit.textContent = "Приём заявок временно приостановлен";
+      }
+      form.insertAdjacentHTML("afterbegin", '<div class="notice" data-operator-form-warning><strong>Форма пока недоступна.</strong> Владелец сайта должен опубликовать полные реквизиты оператора персональных данных.</div>');
+      return;
+    }
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const data = new FormData(form);
       if (data.get("website")) return;
+      if (data.get("consent") !== "yes") {
+        form.elements.consent?.setCustomValidity("Подтвердите отдельное согласие на обработку персональных данных.");
+        form.reportValidity();
+        return;
+      }
+      form.elements.consent?.setCustomValidity("");
       const submit = form.querySelector('[type="submit"]');
       const submitLabel = submit?.textContent || "Отправить";
       const payload = {
@@ -328,6 +384,11 @@
         client_name: data.get("name"),
         preferred_contact: "auto",
         calculation_version: `${cfg.calculator.rfUtil.version}+annual-${cfg.calculator.annualTaxes.version}`,
+        consent_given: data.get("consent") === "yes",
+        consent_version: cfg.legal.personalDataConsentVersion,
+        privacy_policy_version: cfg.legal.privacyPolicyVersion,
+        consent_timestamp: new Date().toISOString(),
+        consent_source: `${window.location.origin}${window.location.pathname}`,
         utm_source: params.get("utm_source"),
         utm_medium: params.get("utm_medium"),
         utm_campaign: params.get("utm_campaign"),
@@ -358,7 +419,8 @@
         `Контакт: ${payload.contact}`,
         `Авто: ${payload.car || "не указано"}`,
         `Бюджет: ${payload.budget || "не указан"}`,
-        `Комментарий: ${payload.comment || "нет"}`
+        `Комментарий: ${payload.comment || "нет"}`,
+        `Согласие на обработку ПДн: версия ${payload.consent_version}, ${payload.consent_timestamp}`
       ].join("\n"));
       window.location.href = `mailto:${cfg.brand.email}?subject=${encodeURIComponent("Заявка БелУчёт")}&body=${body}`;
       if (submit) {
@@ -379,17 +441,20 @@
     }
   }
 
+  function deleteOptionalCookies(prefixes) {
+    document.cookie.split(";").forEach((item) => {
+      const name = item.split("=")[0].trim();
+      if (prefixes.some((prefix) => name.startsWith(prefix))) {
+        document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
+        document.cookie = `${name}=; Max-Age=0; Path=/; Domain=.${location.hostname}; SameSite=Lax`;
+      }
+    });
+  }
+
   function activateConsentFeatures(consent) {
     if (!consent || consent.version !== cfg.cookies.policyVersion) return;
-    if (!consent.analytics && !consent.marketing) {
-      const optionalPrefixes = ["_ga", "_gid", "_ym_", "yandexuid", "_fbp"];
-      document.cookie.split(";").forEach((item) => {
-        const name = item.split("=")[0].trim();
-        if (optionalPrefixes.some((prefix) => name.startsWith(prefix))) {
-          document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
-        }
-      });
-    }
+    if (!consent.analytics) deleteOptionalCookies(["_ga", "_gid", "_gat", "_ym_", "yandexuid", "yabs-sid"]);
+    if (!consent.marketing) deleteOptionalCookies(["_fbp", "_gcl_"]);
     document.dispatchEvent(new CustomEvent("beluchet:consent", { detail: consent }));
   }
 
@@ -411,19 +476,24 @@
     if (!cfg.cookies) return;
     const footerTitles = $$(".footer-title");
     const documentsColumn = footerTitles.find((title) => title.textContent.trim() === "Документы")?.parentElement;
-    if (documentsColumn && !$("[data-cookie-settings-link]", documentsColumn)) {
-      documentsColumn.insertAdjacentHTML("beforeend", '<p><a href="/cookies/">Cookie</a></p><p><a href="#" data-cookie-settings-link>Настройки cookie</a></p>');
+    if (documentsColumn) {
+      if (!$('a[href="/consent/"]', documentsColumn)) documentsColumn.insertAdjacentHTML("beforeend", '<p><a href="/consent/">Согласие на обработку ПДн</a></p>');
+      if (!$('a[href="/cookies/"]', documentsColumn)) documentsColumn.insertAdjacentHTML("beforeend", '<p><a href="/cookies/">Cookie</a></p>');
+      if (!$('[data-cookie-settings-link]', documentsColumn)) documentsColumn.insertAdjacentHTML("beforeend", '<p><a href="#" data-cookie-settings-link>Настройки cookie</a></p>');
     }
     const current = readConsent();
     const gpcEnabled = navigator.globalPrivacyControl === true;
+    const analyticsConfigured = Boolean(cfg.analytics?.yandexMetrikaId);
+    const marketingConfigured = Array.isArray(cfg.analytics?.marketingScripts) && cfg.analytics.marketingScripts.length > 0;
+    const optionalConfigured = analyticsConfigured || marketingConfigured;
     const root = document.createElement("div");
     root.innerHTML = `
       <section class="cookie-banner" data-cookie-banner role="dialog" aria-label="Настройки cookie">
-        <div><strong>Настройки cookie</strong><p>Необходимые cookie обеспечивают работу сайта. Аналитику и маркетинговые технологии включаем только с вашего согласия.</p></div>
+        <div><strong>Настройки cookie</strong><p>${optionalConfigured ? "Необходимые cookie обеспечивают работу сайта. Аналитику и маркетинговые технологии включаем только с вашего согласия." : "Сейчас сайт использует только необходимый cookie для сохранения вашего выбора. Аналитика и рекламные технологии не подключены."}</p></div>
         <div class="cookie-actions">
-          <button class="button secondary small-button" type="button" data-cookie-essential>Только необходимые</button>
-          <button class="button secondary small-button" type="button" data-cookie-settings>Настроить</button>
-          <button class="button small-button" type="button" data-cookie-all>Принять все</button>
+          <button class="button secondary small-button" type="button" data-cookie-essential>${optionalConfigured ? "Только необходимые" : "Понятно"}</button>
+          <button class="button secondary small-button" type="button" data-cookie-settings ${optionalConfigured ? "" : "hidden"}>Настроить</button>
+          <button class="button small-button" type="button" data-cookie-all ${optionalConfigured ? "" : "hidden"}>Принять все</button>
         </div>
       </section>
       <dialog class="cookie-dialog" data-cookie-dialog aria-labelledby="cookie-title">
@@ -431,8 +501,8 @@
           <div class="modal-head"><div><div class="eyebrow">Конфиденциальность</div><h2 id="cookie-title">Настройки cookie</h2></div><button class="icon-button" value="cancel" aria-label="Закрыть">×</button></div>
           <div class="cookie-options">
             <label class="cookie-option"><span><strong>Необходимые</strong><small>Выбор настроек и техническая работа интерфейса.</small></span><input type="checkbox" checked disabled></label>
-            <label class="cookie-option"><span><strong>Аналитические</strong><small>Помогают понять, какие страницы и функции полезны.</small></span><input name="analytics" type="checkbox"></label>
-            <label class="cookie-option"><span><strong>Маркетинговые</strong><small>Используются для оценки рекламных кампаний. Сейчас не подключены.</small></span><input name="marketing" type="checkbox"></label>
+            <label class="cookie-option"><span><strong>Аналитические</strong><small>${analyticsConfigured ? "Помогают понять, какие страницы и функции полезны." : "Не подключены."}</small></span><input name="analytics" type="checkbox" ${analyticsConfigured ? "" : "disabled"}></label>
+            <label class="cookie-option"><span><strong>Маркетинговые</strong><small>${marketingConfigured ? "Используются для оценки рекламных кампаний." : "Не подключены."}</small></span><input name="marketing" type="checkbox" ${marketingConfigured ? "" : "disabled"}></label>
           </div>
           <p class="small">Подробнее — в <a href="/cookies/">политике использования cookie</a>.</p>
           <div class="modal-actions"><button class="button secondary" type="button" data-cookie-dialog-essential>Только необходимые</button><button class="button" value="save">Сохранить выбор</button></div>
@@ -449,12 +519,12 @@
       dialog.showModal();
     };
     $("[data-cookie-essential]", root).addEventListener("click", () => { writeConsent({ analytics: false, marketing: false }); banner.hidden = true; });
-    $("[data-cookie-all]", root).addEventListener("click", () => { writeConsent({ analytics: !gpcEnabled, marketing: !gpcEnabled }); banner.hidden = true; });
+    $("[data-cookie-all]", root).addEventListener("click", () => { writeConsent({ analytics: analyticsConfigured && !gpcEnabled, marketing: marketingConfigured && !gpcEnabled }); banner.hidden = true; });
     $("[data-cookie-settings]", root).addEventListener("click", openSettings);
     $("[data-cookie-dialog-essential]", root).addEventListener("click", () => { writeConsent({ analytics: false, marketing: false }); dialog.close(); banner.hidden = true; });
     dialog.addEventListener("close", () => {
       if (dialog.returnValue === "save") {
-        writeConsent({ analytics: settingsForm.elements.analytics.checked && !gpcEnabled, marketing: settingsForm.elements.marketing.checked && !gpcEnabled });
+        writeConsent({ analytics: analyticsConfigured && settingsForm.elements.analytics.checked && !gpcEnabled, marketing: marketingConfigured && settingsForm.elements.marketing.checked && !gpcEnabled });
         banner.hidden = true;
       }
     });
@@ -500,6 +570,8 @@
   }
 
   setConfigText();
+  initLegalDetails();
+  initPriceReferences();
   initNavigation();
   initCalculator();
   initFaqModes();
