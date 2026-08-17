@@ -1,14 +1,92 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Реальные кейсы и примеры расчётов — БелУчёт</title><meta name="description" content="Подтверждённые кейсы клиентов с фотографиями и отдельно помеченные расчётные примеры автомобилей."><link rel="canonical" href="https://beluchet.ru/cases/"><link rel="stylesheet" href="/assets/styles.css"></head><body>
-<a class="skip-link" href="#main">К содержанию</a><header class="topbar"><div class="wrap nav"><a class="brand" href="/"><span class="brand-mark">БУ</span><span>БелУчёт</span></a><nav class="nav-links" aria-label="Основная навигация"><a href="/calculator/">Калькулятор</a><a href="/services/">Тарифы</a><a href="/process/">Как проходит</a><a aria-current="page" href="/cases/">Кейсы</a><a href="/faq/">Вопросы</a></nav><a class="button small-button nav-cta" href="/calculator/">Рассчитать</a><button class="nav-toggle" type="button" aria-label="Открыть меню" aria-expanded="false"><span></span></button></div></header>
-<main id="main">
-  <section class="section white"><div class="wrap"><div class="section-head"><div><div class="eyebrow">Подтверждённые истории</div><h1>Реальные кейсы с фотографиями</h1></div><p>Публикуем только фактические истории с письменным согласием клиента. Номера, документы, лица и геолокация скрываются, если клиент отдельно не разрешил публикацию.</p></div><div class="grid three real-cases-grid" data-real-cases></div><div class="cases-empty"><strong>Подтверждённые материалы готовятся.</strong><p>Интерфейс кейсов готов для фотографий, маршрута, сроков, количества поездок и отзыва. Пока согласованные материалы не получены, мы честно показываем только расчётные примеры ниже.</p></div></div></section>
-  <section class="section tint"><div class="wrap"><div class="section-head"><div><div class="eyebrow">Не реальные клиенты</div><h2>Расчётные примеры</h2></div><p>Эти карточки помогают понять структуру продукта и не являются подтверждением прохождения конкретным человеком.</p></div><div class="grid three">
-    <article class="card case-card"><div class="case-visual"><div><span class="tag">Расчётный пример</span><div class="case-model" style="margin-top:12px">BMW X6 3.0</div></div></div><div class="case-body"><p>РВП на 3 года, тариф «С сопровождением», расширенный объём проверки.</p><div class="case-kpi"><div><span class="small">Основание</span><strong>РВП</strong></div><div><span class="small">Срок</span><strong>3 года</strong></div><div><span class="small">Формат</span><strong>сопровождение</strong></div></div></div></article>
-    <article class="card case-card"><div class="case-visual red"><div><span class="tag red">Расчётный пример</span><div class="case-model" style="margin-top:12px">Mercedes GLS 3.0</div></div></div><div class="case-body"><p>Автомобиль из-за пределов ЕАЭС: основание доступно, внешние платежи уточняются по документам.</p><div class="case-kpi"><div><span class="small">Основание</span><strong>РВП</strong></div><div><span class="small">Таможня</span><strong>отдельно</strong></div><div><span class="small">Итог</span><strong>после сметы</strong></div></div></div></article>
-    <article class="card case-card"><div class="case-visual blue"><div><span class="tag">Расчётный пример</span><div class="case-model" style="margin-top:12px">Zeekr 001</div></div></div><div class="case-body"><p>Для электромобиля основание рассчитывается как обычно, а платежи зависят от мощности, возраста и сценария ввоза.</p><div class="case-kpi"><div><span class="small">Тип</span><strong>электро</strong></div><div><span class="small">Основание</span><strong>доступно</strong></div><div><span class="small">Платежи</span><strong>по параметрам</strong></div></div></div></article>
-  </div></div></section>
-  <section class="section white"><div class="wrap"><div class="cta-band"><div><h2>Рассчитайте свой сценарий</h2><p>Выберите год, двигатель, основание и формат сопровождения.</p></div><a class="button" href="/calculator/">Открыть калькулятор</a></div></div></section>
-</main>
-<dialog class="case-dialog" data-case-dialog><div class="modal-card"><div class="modal-head"><span></span><button class="icon-button" type="button" aria-label="Закрыть" onclick="this.closest('dialog').close()">×</button></div><div data-case-dialog-content></div></div></dialog>
-<footer class="footer"><div class="wrap"><div class="footer-grid"><div><a class="brand" href="/"><span class="brand-mark">БУ</span><span>БелУчёт</span></a></div><div><div class="footer-title">Сервис</div><p><a href="/calculator/">Калькулятор</a></p><p><a href="/services/">Тарифы</a></p></div><div><div class="footer-title">Помощь</div><p><a href="/faq/">Вопросы</a></p><p><a href="/contacts/">Заявка</a></p></div><div><div class="footer-title">Документы</div><p><a href="/privacy/">Политика данных</a></p><p><a href="/disclaimer/">Правовая информация</a></p></div></div><div class="footer-bottom"><span>© <span data-current-year></span> БелУчёт</span><span>Расчётные примеры не являются публичной офертой.</span></div></div></footer>
-<script src="/assets/runtime-config.js"></script><script src="/assets/config.js"></script><script src="/assets/cases-data.js"></script><script src="/assets/site.js" defer></script></body></html>
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Цены автомобилей и примеры расчётов — БелУчёт</title>
+  <meta name="description" content="Примеры расчётов автомобилей разных сегментов: цена авто, стоимость сопровождения, альтернативный утильсбор и потенциальная разница.">
+  <link rel="canonical" href="https://beluchet.ru/cases/">
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержанию</a>
+  <header class="topbar">
+    <div class="wrap nav">
+      <a class="brand" href="/"><span class="brand-mark">БУ</span><span>БелУчёт</span></a>
+      <nav class="nav-links" aria-label="Основная навигация">
+        <a href="/calculator/">Калькулятор</a>
+        <a href="/services/">Тарифы</a>
+        <a href="/process/">Как проходит</a>
+        <a aria-current="page" href="/cases/">Примеры авто</a>
+        <a href="/faq/">Вопросы</a>
+      </nav>
+      <a class="button small-button nav-cta" href="/calculator/">Рассчитать</a>
+      <button class="nav-toggle" type="button" aria-label="Открыть меню" aria-expanded="false"><span></span></button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="section white examples-hero">
+      <div class="wrap">
+        <div class="section-head">
+          <div><div class="eyebrow">Примеры экономики</div><h1>Сравните автомобили разных сегментов</h1></div>
+          <p>Выберите близкий автомобиль и посмотрите структуру расчёта: сценарную цену машины, стоимость БелУчёта, альтернативный утильсбор РФ и потенциальную разницу.</p>
+        </div>
+        <div class="notice green"><strong>Это не объявления о продаже.</strong> Цены автомобилей заданы как понятные сценарные бюджеты. Для решения по конкретной машине вставьте фактическую цену из объявления в калькулятор и передайте ссылку на проверку.</div>
+        <p class="small examples-updated">Набор сценариев обновлён: <strong data-examples-updated></strong>. Рыночную цену конкретного автомобиля проверяйте по объявлению.</p>
+        <div class="example-market-actions">
+          <a class="button" href="/calculator/">Рассчитать своё авто</a>
+          <a class="button secondary" href="/contacts/">Отправить ссылку менеджеру</a>
+          <a class="text-link" href="https://av.by/" target="_blank" rel="noopener noreferrer">Посмотреть текущие объявления на AV.BY ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section tint">
+      <div class="wrap">
+        <div class="example-toolbar card" aria-label="Фильтры примеров автомобилей">
+          <label>Поиск по модели<input type="search" data-example-search placeholder="Например, BMW или Zeekr"></label>
+          <label>Сегмент<select data-example-segment><option value="all">Все сегменты</option><option value="mass">Популярный</option><option value="business">Бизнес</option><option value="premium">Премиум</option><option value="luxury">Люкс</option><option value="electric">Электро</option></select></label>
+          <label>Бюджет автомобиля<select data-example-budget><option value="0">Любой бюджет</option><option value="50000">до $50 000</option><option value="75000">до $75 000</option><option value="100000">до $100 000</option><option value="150000">до $150 000</option></select></label>
+          <div class="example-count"><span>Показано</span><strong data-example-count></strong></div>
+        </div>
+        <div class="grid two car-examples-grid" data-car-examples></div>
+        <div class="cases-empty" data-examples-empty hidden><strong>По выбранным условиям примеров нет.</strong><p>Измените фильтры или рассчитайте автомобиль по собственным параметрам.</p><a class="button secondary" href="/calculator/">Открыть калькулятор</a></div>
+        <p class="legal-inline"><strong>Расчёты предварительные и не являются публичной офертой или гарантией экономии.</strong> Цена автомобиля не подтверждает его происхождение, таможенный статус, применимость выбранного режима или возможность использования в конкретной ситуации. Окончательный расчёт выполняется по документам.</p>
+      </div>
+    </section>
+
+    <section class="section white">
+      <div class="wrap">
+        <div class="section-head"><div><div class="eyebrow">Как использовать примеры</div><h2>От ориентира — к проверенному автомобилю</h2></div><p>Карточки помогают понять порядок величин. Решение принимается только после проверки конкретного объявления и документов.</p></div>
+        <div class="trust-strip example-steps">
+          <div><strong>1. Найдите автомобиль</strong><span>На AV.BY, у дилера или на другой площадке.</span></div>
+          <div><strong>2. Откройте похожий расчёт</strong><span>Параметры выбранного примера уже будут заполнены.</span></div>
+          <div><strong>3. Замените цену и характеристики</strong><span>Используйте данные конкретного объявления.</span></div>
+          <div><strong>4. Передайте ссылку</strong><span>Менеджер проверит применимость и подготовит смету.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section tint">
+      <div class="wrap">
+        <div class="section-head"><div><div class="eyebrow">Подтверждённые истории</div><h2>Реальные кейсы клиентов</h2></div><p>Публикуем только фактические истории с письменным согласием. Номера, документы, лица и геолокация скрываются, если клиент отдельно не разрешил публикацию.</p></div>
+        <div class="grid three real-cases-grid" data-real-cases></div>
+        <div class="cases-empty"><strong>Подтверждённые материалы готовятся.</strong><p>До получения согласованных материалов мы не выдаём расчётные сценарии за реальные истории.</p></div>
+      </div>
+    </section>
+
+    <section class="section white">
+      <div class="wrap"><div class="cta-band"><div><h2>Уже нашли автомобиль?</h2><p>Пришлите модель или ссылку на объявление. Для первого ответа документы не нужны.</p></div><a class="button" href="/contacts/">Передать автомобиль на проверку</a></div></div>
+    </section>
+  </main>
+
+  <dialog class="case-dialog" data-case-dialog><div class="modal-card"><div class="modal-head"><span></span><button class="icon-button" type="button" aria-label="Закрыть" onclick="this.closest('dialog').close()">×</button></div><div data-case-dialog-content></div></div></dialog>
+  <footer class="footer"><div class="wrap"><div class="footer-grid"><div><a class="brand" href="/"><span class="brand-mark">БУ</span><span>БелУчёт</span></a></div><div><div class="footer-title">Сервис</div><p><a href="/calculator/">Калькулятор</a></p><p><a href="/services/">Тарифы</a></p></div><div><div class="footer-title">Помощь</div><p><a href="/faq/">Вопросы</a></p><p><a href="/contacts/">Заявка</a></p></div><div><div class="footer-title">Документы</div><p><a href="/privacy/">Политика данных</a></p><p><a href="/disclaimer/">Правовая информация</a></p></div></div><div class="footer-bottom"><span>© <span data-current-year></span> БелУчёт</span><span>Расчётные примеры не являются публичной офертой.</span></div></div></footer>
+  <script src="/assets/runtime-config.js"></script>
+  <script src="/assets/config.js"></script>
+  <script src="/assets/cases-data.js"></script>
+  <script src="/assets/car-examples-data.js"></script>
+  <script src="/assets/site.js" defer></script>
+</body>
+</html>
