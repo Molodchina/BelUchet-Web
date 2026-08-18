@@ -639,7 +639,9 @@
       const baseUsd = cfg.pricingUsd.scenarioPackages.rvp[item.package];
       const serviceUsd = baseUsd + complexityPrice(item.priceUsd, item.power);
       const serviceRub = Math.round(serviceUsd * state.rates.USD_RUB);
+      const vehiclePriceRub = Math.round(item.priceUsd * state.rates.USD_RUB);
       const minimumBudgetUsd = item.priceUsd + serviceUsd;
+      const minimumBudgetRub = Math.round(minimumBudgetUsd * state.rates.USD_RUB);
       const rfUtil = rfUtilCostFromValues({
         age: item.age,
         engineType: item.engineType,
@@ -648,25 +650,27 @@
         calculationYear: source.calculationYear
       });
       const differenceRub = rfUtil.amountRub - serviceRub;
-      const differenceLabel = differenceRub >= 0 ? "Потенциальная разница" : "Разница не в пользу сценария";
+      const hasBenefit = differenceRub >= 0;
       const vehicleDetails = item.engineType === "ev"
         ? `${item.engineLabel}, ${number(item.power)} л.с.`
         : `${item.engineLabel}, ${number(item.power)} л.с., ${number(item.volume)} см³`;
 
       return `<article class="card car-example-card" data-example-id="${item.id}">
+        <div class="car-example-benefit ${hasBenefit ? "" : "negative"}">
+          <span>${hasBenefit ? "Возможная выгода до" : "Выгода по этому расчёту"}</span>
+          <strong>${money(Math.max(0, differenceRub), "RUB")}</strong>
+          <small>${hasBenefit ? "после стоимости сопровождения" : "расходы нужно уточнить индивидуально"}</small>
+        </div>
         <div class="car-example-head">
           <div><span class="tag">${item.segmentLabel}</span><h3>${item.title}</h3><p>${item.year} · ${vehicleDetails}</p></div>
-          <strong class="car-example-price">${money(item.priceUsd)}</strong>
+          <div class="car-example-price-block"><span>Ориентир цены авто</span><strong class="car-example-price">${money(vehiclePriceRub, "RUB")}</strong><small>≈ ${money(item.priceUsd)}</small></div>
         </div>
-        <p class="small scenario-price-note">Сценарная цена автомобиля для расчёта, не объявление о продаже.</p>
         <div class="example-economics">
-          <div><span>Тариф и проверка</span><strong>${money(serviceUsd)}</strong><small>${packageLabels[item.package]}</small></div>
-          <div><span>Авто + сервис</span><strong>${money(minimumBudgetUsd)}</strong><small>без внешних расходов</small></div>
-          <div><span>Утильсбор РФ в альтернативе</span><strong>${money(rfUtil.amountRub, "RUB")}</strong><small>${source.calculationYear} год</small></div>
-          <div class="example-difference ${differenceRub < 0 ? "negative" : ""}"><span>${differenceLabel}</span><strong>${money(differenceRub, "RUB")}</strong><small>после стоимости сервиса</small></div>
+          <div><span>Сопровождение и проверка</span><strong>${money(serviceRub, "RUB")}</strong><small>≈ ${money(serviceUsd)} · ${packageLabels[item.package]}</small></div>
+          <div><span>Автомобиль с сопровождением</span><strong>${money(minimumBudgetRub, "RUB")}</strong><small>≈ ${money(minimumBudgetUsd)} · без внешних расходов</small></div>
+          <div class="example-comparison"><span>Расчётный утильсбор в РФ</span><strong>${money(rfUtil.amountRub, "RUB")}</strong><small>для сравнения · ${source.calculationYear} год</small></div>
         </div>
-        <p class="car-example-note">${item.note}</p>
-        <div class="example-actions"><a class="button" href="${calculationLink(item)}">Открыть расчёт</a><a class="button secondary" href="/contacts/?car=${encodeURIComponent(`${item.title} ${item.year}`)}">Проверить своё авто</a></div>
+        <div class="example-actions"><a class="button" href="${calculationLink(item)}">Уточнить расчёт</a><a class="button secondary" href="/contacts/?car=${encodeURIComponent(`${item.title} ${item.year}`)}">Проверить объявление</a></div>
       </article>`;
     };
 
@@ -676,7 +680,7 @@
       const query = String(searchFilter?.value || "").trim().toLowerCase();
       const filtered = source.items.filter((item) => {
         const matchesSegment = segment === "all" || item.segment === segment;
-        const matchesBudget = !maxBudget || item.priceUsd <= maxBudget;
+        const matchesBudget = !maxBudget || item.priceUsd * state.rates.USD_RUB <= maxBudget;
         const matchesQuery = !query || `${item.title} ${item.engineLabel} ${item.segmentLabel}`.toLowerCase().includes(query);
         return matchesSegment && matchesBudget && matchesQuery;
       });

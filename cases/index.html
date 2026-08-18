@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Цены автомобилей и примеры расчётов — БелУчёт</title>
-  <meta name="description" content="Примеры расчётов автомобилей разных сегментов: цена авто, стоимость сопровождения, альтернативный утильсбор и потенциальная разница.">
+  <title>Примеры выгоды по автомобилям — БелУчёт</title>
+  <meta name="description" content="Сравните ориентировочную стоимость автомобилей разных сегментов, расходы на сопровождение и возможную выгоду.">
   <link rel="canonical" href="https://beluchet.ru/cases/">
   <link rel="stylesheet" href="/assets/styles.css">
 </head>
@@ -29,15 +29,15 @@
     <section class="section white examples-hero">
       <div class="wrap">
         <div class="section-head">
-          <div><div class="eyebrow">Примеры экономики</div><h1>Сравните автомобили разных сегментов</h1></div>
-          <p>Выберите близкий автомобиль и посмотрите структуру расчёта: сценарную цену машины, стоимость БелУчёта, альтернативный утильсбор РФ и потенциальную разницу.</p>
+          <div><div class="eyebrow">Расчёты по моделям</div><h1>Сколько можно сэкономить на автомобиле</h1></div>
+          <p>Выберите похожую модель: сразу увидите возможную выгоду, ориентир цены авто и ключевые расходы в рублях.</p>
         </div>
-        <div class="notice green"><strong>Это не объявления о продаже.</strong> Цены автомобилей заданы как понятные сценарные бюджеты. Для решения по конкретной машине вставьте фактическую цену из объявления в калькулятор и передайте ссылку на проверку.</div>
-        <p class="small examples-updated">Набор сценариев обновлён: <strong data-examples-updated></strong>. Рыночную цену конкретного автомобиля проверяйте по объявлению.</p>
+        <div class="notice green"><strong>Сначала — ориентир, затем — точная смета.</strong> Карточки показывают расчётные сценарии, а не автомобили в продаже. Возможность оформления и итоговые расходы проверяются по конкретному авто и документам.</div>
+        <p class="small examples-updated">Исходные сценарии обновлены: <strong data-examples-updated></strong>. Рублёвый эквивалент пересчитывается по доступному курсу; итог фиксируется в смете.</p>
         <div class="example-market-actions">
-          <a class="button" href="/calculator/">Рассчитать своё авто</a>
-          <a class="button secondary" href="/contacts/">Отправить ссылку менеджеру</a>
-          <a class="text-link" href="https://av.by/" target="_blank" rel="noopener noreferrer">Посмотреть текущие объявления на AV.BY ↗</a>
+          <a class="button" href="/calculator/">Рассчитать свой автомобиль</a>
+          <a class="button secondary" href="/contacts/">Отправить объявление на проверку</a>
+          <a class="text-link" href="https://av.by/" target="_blank" rel="noopener noreferrer">Найти автомобиль на AV.BY ↗</a>
         </div>
       </div>
     </section>
@@ -45,39 +45,39 @@
     <section class="section tint">
       <div class="wrap">
         <div class="example-toolbar card" aria-label="Фильтры примеров автомобилей">
-          <label>Поиск по модели<input type="search" data-example-search placeholder="Например, BMW или Zeekr"></label>
-          <label>Сегмент<select data-example-segment><option value="all">Все сегменты</option><option value="mass">Популярный</option><option value="business">Бизнес</option><option value="premium">Премиум</option><option value="luxury">Люкс</option><option value="electric">Электро</option></select></label>
-          <label>Бюджет автомобиля<select data-example-budget><option value="0">Любой бюджет</option><option value="50000">до $50 000</option><option value="75000">до $75 000</option><option value="100000">до $100 000</option><option value="150000">до $150 000</option></select></label>
+          <label>Найти модель<input type="search" data-example-search placeholder="Например, BMW или Zeekr"></label>
+          <label>Класс автомобиля<select data-example-segment><option value="all">Все классы</option><option value="mass">Популярные</option><option value="business">Бизнес-класс</option><option value="premium">Премиум</option><option value="luxury">Люкс</option><option value="electric">Электромобили</option></select></label>
+          <label>Цена автомобиля<select data-example-budget><option value="0">Любая цена</option><option value="5000000">до 5 млн ₽</option><option value="7000000">до 7 млн ₽</option><option value="10000000">до 10 млн ₽</option><option value="15000000">до 15 млн ₽</option></select></label>
           <div class="example-count"><span>Показано</span><strong data-example-count></strong></div>
         </div>
         <div class="grid two car-examples-grid" data-car-examples></div>
         <div class="cases-empty" data-examples-empty hidden><strong>По выбранным условиям примеров нет.</strong><p>Измените фильтры или рассчитайте автомобиль по собственным параметрам.</p><a class="button secondary" href="/calculator/">Открыть калькулятор</a></div>
-        <p class="legal-inline"><strong>Расчёты предварительные и не являются публичной офертой или гарантией экономии.</strong> Цена автомобиля не подтверждает его происхождение, таможенный статус, применимость выбранного режима или возможность использования в конкретной ситуации. Окончательный расчёт выполняется по документам.</p>
+        <p class="legal-inline"><strong>Возможная выгода — это расчётный утильсбор в сравнительном сценарии за вычетом выбранного пакета сопровождения.</strong> Она не учитывает внешние и индивидуальные расходы, налоги и возможные изменения правил. Расчёт предварительный, не является публичной офертой или гарантией экономии. Точная смета готовится после проверки авто и документов.</p>
       </div>
     </section>
 
     <section class="section white">
       <div class="wrap">
-        <div class="section-head"><div><div class="eyebrow">Как использовать примеры</div><h2>От ориентира — к проверенному автомобилю</h2></div><p>Карточки помогают понять порядок величин. Решение принимается только после проверки конкретного объявления и документов.</p></div>
+        <div class="section-head"><div><div class="eyebrow">От примера к смете</div><h2>Проверьте выгоду на конкретном автомобиле</h2></div><p>Пример помогает отобрать подходящую модель. Точный ответ даёт только проверка объявления и документов.</p></div>
         <div class="trust-strip example-steps">
-          <div><strong>1. Найдите автомобиль</strong><span>На AV.BY, у дилера или на другой площадке.</span></div>
-          <div><strong>2. Откройте похожий расчёт</strong><span>Параметры выбранного примера уже будут заполнены.</span></div>
-          <div><strong>3. Замените цену и характеристики</strong><span>Используйте данные конкретного объявления.</span></div>
-          <div><strong>4. Передайте ссылку</strong><span>Менеджер проверит применимость и подготовит смету.</span></div>
+          <div><strong>1. Выберите ориентир</strong><span>Найдите близкую модель по классу, двигателю и мощности.</span></div>
+          <div><strong>2. Уточните расчёт</strong><span>Калькулятор откроется с уже заполненными параметрами.</span></div>
+          <div><strong>3. Добавьте объявление</strong><span>Замените ориентиры точной ценой и характеристиками авто.</span></div>
+          <div><strong>4. Получите проверку</strong><span>Менеджер проверит сценарий и подготовит понятную смету.</span></div>
         </div>
       </div>
     </section>
 
     <section class="section tint">
       <div class="wrap">
-        <div class="section-head"><div><div class="eyebrow">Подтверждённые истории</div><h2>Реальные кейсы клиентов</h2></div><p>Публикуем только фактические истории с письменным согласием. Номера, документы, лица и геолокация скрываются, если клиент отдельно не разрешил публикацию.</p></div>
+        <div class="section-head"><div><div class="eyebrow">Факты вместо обещаний</div><h2>Подтверждённые истории клиентов</h2></div><p>История появляется здесь только после проверки исходных данных и с согласия клиента. Личная информация без разрешения не публикуется.</p></div>
         <div class="grid three real-cases-grid" data-real-cases></div>
-        <div class="cases-empty"><strong>Подтверждённые материалы готовятся.</strong><p>До получения согласованных материалов мы не выдаём расчётные сценарии за реальные истории.</p></div>
+        <div class="cases-empty"><strong>Первые истории проходят согласование.</strong><p>Пока показываем только расчётные примеры и не выдаём их за завершённые кейсы.</p></div>
       </div>
     </section>
 
     <section class="section white">
-      <div class="wrap"><div class="cta-band"><div><h2>Уже нашли автомобиль?</h2><p>Пришлите модель или ссылку на объявление. Для первого ответа документы не нужны.</p></div><a class="button" href="/contacts/">Передать автомобиль на проверку</a></div></div>
+      <div class="wrap"><div class="cta-band"><div><h2>Есть ссылка на подходящий автомобиль?</h2><p>Отправьте объявление: предварительно оценим применимость сценария и объясним состав расходов.</p></div><a class="button" href="/contacts/">Проверить автомобиль</a></div></div>
     </section>
   </main>
 

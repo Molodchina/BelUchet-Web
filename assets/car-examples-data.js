@@ -17,8 +17,7 @@ window.BELUCHET_CAR_EXAMPLES = {
       power: 238,
       age: "under3",
       priceUsd: 35000,
-      package: "self",
-      note: "Пример для клиента, который готов самостоятельно пройти второй визит и ГАИ."
+      package: "self"
     },
     {
       id: "volkswagen-tiguan-2024",
@@ -33,8 +32,7 @@ window.BELUCHET_CAR_EXAMPLES = {
       power: 220,
       age: "under3",
       priceUsd: 45000,
-      package: "self",
-      note: "Сценарий для самостоятельного формата с предварительной проверкой автомобиля."
+      package: "self"
     },
     {
       id: "toyota-highlander-2024",
@@ -49,8 +47,7 @@ window.BELUCHET_CAR_EXAMPLES = {
       power: 249,
       age: "under3",
       priceUsd: 55000,
-      package: "assisted",
-      note: "Пример с сопровождением на ключевом этапе и заранее согласованным маршрутом."
+      package: "assisted"
     },
     {
       id: "bmw-530i-2024",
@@ -65,8 +62,7 @@ window.BELUCHET_CAR_EXAMPLES = {
       power: 258,
       age: "under3",
       priceUsd: 65000,
-      package: "assisted",
-      note: "Сценарий бизнес-седана с тарифом «С сопровождением»."
+      package: "assisted"
     },
     {
       id: "mercedes-e300-2024",
@@ -81,8 +77,7 @@ window.BELUCHET_CAR_EXAMPLES = {
       power: 258,
       age: "under3",
       priceUsd: 70000,
-      package: "assisted",
-      note: "Пример расчёта автомобиля бизнес-класса до проверки документов и происхождения."
+      package: "assisted"
     },
     {
       id: "bmw-x6-2024",
@@ -97,8 +92,7 @@ window.BELUCHET_CAR_EXAMPLES = {
       power: 298,
       age: "under3",
       priceUsd: 90000,
-      package: "assisted",
-      note: "Премиальный кроссовер с расширенной проверкой и сопровождением."
+      package: "assisted"
     },
     {
       id: "porsche-cayenne-2024",
@@ -113,8 +107,7 @@ window.BELUCHET_CAR_EXAMPLES = {
       power: 353,
       age: "under3",
       priceUsd: 110000,
-      package: "assisted",
-      note: "Пример повышенной сложности; статус транспортного налога проверяется по официальному перечню."
+      package: "assisted"
     },
     {
       id: "mercedes-gls-2024",
@@ -129,8 +122,7 @@ window.BELUCHET_CAR_EXAMPLES = {
       power: 367,
       age: "under3",
       priceUsd: 125000,
-      package: "full",
-      note: "Полный цикл для крупного премиального SUV; внешние расходы уточняются отдельно."
+      package: "full"
     },
     {
       id: "zeekr-001-2024",
@@ -145,8 +137,7 @@ window.BELUCHET_CAR_EXAMPLES = {
       power: 272,
       age: "under3",
       priceUsd: 50000,
-      package: "assisted",
-      note: "Электромобиль рассчитывается по мощности; налоговые льготы проверяются на дату оформления."
+      package: "assisted"
     },
     {
       id: "tesla-model-y-2024",
@@ -161,8 +152,7 @@ window.BELUCHET_CAR_EXAMPLES = {
       power: 378,
       age: "under3",
       priceUsd: 45000,
-      package: "assisted",
-      note: "Пример мощного электромобиля с обязательной проверкой характеристик по документам."
+      package: "assisted"
     },
     {
       id: "range-rover-sport-2024",
@@ -177,8 +167,7 @@ window.BELUCHET_CAR_EXAMPLES = {
       power: 400,
       age: "under3",
       priceUsd: 140000,
-      package: "full",
-      note: "Расширенный сценарий с полным сопровождением и отдельной проверкой обязательных платежей."
+      package: "full"
     },
     {
       id: "bentley-bentayga-2024",
@@ -193,8 +182,7 @@ window.BELUCHET_CAR_EXAMPLES = {
       power: 550,
       age: "under3",
       priceUsd: 210000,
-      package: "full",
-      note: "Индивидуальный сценарий: требуется расширенная проверка автомобиля, платежей и порядка использования."
+      package: "full"
     }
   ]
 };
