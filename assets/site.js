@@ -80,20 +80,40 @@
 
   function operatorDetailsReady() {
     const operator = cfg.legal?.operator || {};
-    return [operator.fullName, operator.inn, operator.registrationNumber, operator.address].every((value) => String(value || "").trim());
+    const required = operator.type === "npd"
+      ? [operator.fullName, operator.inn, operator.npdRegistrationDate, operator.address]
+      : [operator.fullName, operator.inn, operator.registrationNumber, operator.address];
+    return required.every((value) => String(value || "").trim());
+  }
+
+  function leadCaptureReady() {
+    return operatorDetailsReady() && cfg.legal?.personalDataRegistrationReady === true;
   }
 
   function initLegalDetails() {
     const operator = cfg.legal?.operator || {};
     const operatorReady = operatorDetailsReady();
+    const identityRequired = operator.type === "npd"
+      ? [operator.fullName, operator.inn, operator.npdRegistrationDate]
+      : [operator.fullName, operator.inn, operator.registrationNumber];
+    const operatorIdentityReady = identityRequired.every((value) => String(value || "").trim());
     $$('[data-operator-name]').forEach((node) => {
       node.textContent = operator.fullName || cfg.brand.company;
     });
     $$('[data-operator-details]').forEach((node) => {
-      node.hidden = !operatorReady;
+      node.hidden = !operatorIdentityReady;
     });
     $$('[data-operator-missing]').forEach((node) => {
       node.hidden = operatorReady;
+    });
+    $$('[data-operator-business-registration-row]').forEach((node) => {
+      node.hidden = operator.type === "npd" || !operator.registrationNumber;
+    });
+    $$('[data-operator-npd-row]').forEach((node) => {
+      node.hidden = operator.type !== "npd";
+    });
+    $$('[data-operator-address-row]').forEach((node) => {
+      node.hidden = !operator.address;
     });
     $$('[data-config-email]').forEach((node) => {
       const path = node.getAttribute("data-config-email").split(".");
@@ -127,7 +147,7 @@
       const apiData = await apiResponse.json();
       if (apiResponse.ok && apiData?.rates) {
         state.rates = { ...state.rates, ...apiData.rates };
-        if (status) status.textContent = apiData.source === "CBR" ? "Валютный пересчёт обновлён по курсу ЦБ РФ." : "Для валютного пересчёта используется резервный курс. Итог подтвердит менеджер.";
+        if (status) status.textContent = apiData.source === "CBR" ? "Ориентир цены автомобиля обновлён по курсу ЦБ РФ; цены услуг зафиксированы в рублях." : "Для ориентира цены автомобиля используется резервный курс; цены услуг зафиксированы в рублях.";
         renderPriceReferences();
         calculate();
         return;
@@ -145,9 +165,9 @@
       state.rates.USD_RUB = findRate("USD") || state.rates.USD_RUB;
       state.rates.EUR_RUB = findRate("EUR") || state.rates.EUR_RUB;
       renderPriceReferences();
-      if (status) status.textContent = "Валютный пересчёт обновлён по курсу ЦБ РФ.";
+      if (status) status.textContent = "Ориентир цены автомобиля обновлён по курсу ЦБ РФ; цены услуг зафиксированы в рублях.";
     } catch (error) {
-      if (status) status.textContent = "Для валютного пересчёта используется резервный курс. Итог подтвердит менеджер.";
+      if (status) status.textContent = "Для ориентира цены автомобиля используется резервный курс; цены услуг зафиксированы в рублях.";
     }
     calculate();
   }
@@ -173,13 +193,13 @@
       full: "Полный цикл"
     };
     return {
-      base: cfg.pricingUsd.scenarioPackages.rvp[packageType],
+      base: cfg.pricingRub.scenarioPackages.rvp[packageType],
       label: `${labels[packageType]} · РВП 1 год`
     };
   }
 
-  function complexityPrice(carPriceUsd, power) {
-    const rules = cfg.pricingUsd.complexity;
+  function complexityPriceRub(carPriceUsd, power) {
+    const rules = cfg.pricingRub.complexity;
     if (carPriceUsd > rules.specialPriceUsd || power > rules.specialPowerHp) return rules.special;
     if (carPriceUsd > rules.premiumPriceUsd || power > rules.premiumPowerHp) return rules.premium;
     return 0;
@@ -237,14 +257,13 @@
     const volume = Number(form.elements.volume.value || 0);
     const power = Number(form.elements.power.value || 0);
     const basis = scenarioCosts(form);
-    const complexity = complexityPrice(carPriceUsd, power);
+    const complexity = complexityPriceRub(carPriceUsd, power);
     const packageType = form.elements.package.value;
-    const gai = form.elements.gai?.checked && packageType === "self" ? cfg.pricingUsd.gaiHelp : 0;
-    const annual = form.elements.annual?.checked ? cfg.pricingUsd.annualControl : 0;
+    const gai = form.elements.gai?.checked && packageType === "self" ? cfg.pricingRub.gaiHelp : 0;
+    const annual = form.elements.annual?.checked ? cfg.pricingRub.annualControl : 0;
     const optionalExtras = gai + annual;
     const extras = complexity + optionalExtras;
-    const scenarioUsd = basis.base + extras;
-    const scenarioRub = scenarioUsd * state.rates.USD_RUB;
+    const scenarioRub = basis.base + extras;
     const rfUtil = rfUtilCost(form);
     const benefitRub = rfUtil.amountRub - scenarioRub;
     const rfTaxRate = medianRfTaxRate(power);
@@ -266,10 +285,9 @@
       "[data-out-benefit]": money(benefitRub, "RUB"),
       "[data-out-util-rf]": money(rfUtil.amountRub, "RUB"),
       "[data-out-formula]": `коэффициент ${String(rfUtil.coefficient).replace(".", ",")} × ${money(cfg.calculator.rfUtil.baseRateRub, "RUB")}`,
-      "[data-out-scenario]": money(scenarioUsd),
-      "[data-out-scenario-rub]": money(scenarioRub, "RUB"),
-      "[data-out-base]": money(basis.base),
-      "[data-out-extras]": money(optionalExtras),
+      "[data-out-scenario]": money(scenarioRub, "RUB"),
+      "[data-out-base]": money(basis.base, "RUB"),
+      "[data-out-extras]": money(optionalExtras, "RUB"),
       "[data-out-basis]": basis.label,
       "[data-out-vehicle]": engineType === "ev" ? `${engineLabel}, ${number(power)} л.с., ${ageLabel}` : `${number(volume)} см³, ${number(power)} л.с., ${ageLabel}`,
       "[data-out-rate-kind]": "обычный коэффициент",
@@ -301,7 +319,7 @@
     const complexityRow = $("[data-complexity-row]");
     if (complexityRow) complexityRow.classList.toggle("hidden", complexity === 0);
     const complexityNode = $("[data-out-complexity]");
-    if (complexityNode) complexityNode.textContent = money(complexity);
+    if (complexityNode) complexityNode.textContent = money(complexity, "RUB");
     const volumeField = $("[data-volume-field]");
     if (volumeField) volumeField.classList.toggle("hidden", engineType === "ev");
     const massSummary = $("[data-mass-summary]");
@@ -319,7 +337,7 @@
         budget: carPriceUsd ? `${number(carPriceUsd)} USD` : "",
         package: packageType,
         basis: form.elements.basis.value === "vng-realestate" ? "vng" : form.elements.basis.value,
-        calculation: `${engineLabel}; ${ageLabel}; цена ${money(carPriceUsd)}; ориентир утильсбора РФ для ${rfUtil.calculationYear} года: ${money(rfUtil.amountRub, "RUB")}; тариф ${basis.label}: ${money(scenarioUsd)}; разовая выгода после тарифа: ${money(benefitRub, "RUB")}; транспортный налог РФ по медианной ставке ${money(rfTaxRate, "RUB")}/л.с.: ${money(rfAnnualTaxRub, "RUB")}/год; транспортный налог РБ при массе ${number(maxMassKg)} кг (${comfortVehicle ? "повышенная комфортность по порогу цены" : "обычная категория"}): ${money(byAnnualTaxRub, "RUB")}/год; итоговая потенциальная выгода за ${yearsLabel(comparisonYears)}: ${money(totalBenefitRub, "RUB")}.`
+        calculation: `${engineLabel}; ${ageLabel}; цена автомобиля ${money(carPriceUsd)}; ориентир утильсбора РФ для ${rfUtil.calculationYear} года: ${money(rfUtil.amountRub, "RUB")}; тариф ${basis.label}: ${money(scenarioRub, "RUB")}; разовая выгода после тарифа: ${money(benefitRub, "RUB")}; транспортный налог РФ по медианной ставке ${money(rfTaxRate, "RUB")}/л.с.: ${money(rfAnnualTaxRub, "RUB")}/год; транспортный налог РБ при массе ${number(maxMassKg)} кг (${comfortVehicle ? "повышенная комфортность по порогу цены" : "обычная категория"}): ${money(byAnnualTaxRub, "RUB")}/год; итоговая потенциальная выгода за ${yearsLabel(comparisonYears)}: ${money(totalBenefitRub, "RUB")}.`
       });
       contactLink.href = `/contacts/?${params.toString()}`;
     }
@@ -350,7 +368,9 @@
       maxMassKg: [1, 100000]
     };
     Object.entries(numericLimits).forEach(([name, [min, max]]) => {
-      const value = Number(params.get(name));
+      const rawValue = params.get(name);
+      if (rawValue === null) return;
+      const value = Number(rawValue);
       if (Number.isFinite(value) && value >= min && value <= max && form.elements[name]) form.elements[name].value = String(value);
     });
     form.addEventListener("input", calculate);
@@ -382,13 +402,13 @@
     if (params.get("calculation") && form.elements.comment && !form.elements.comment.value) {
       form.elements.comment.value = `Предварительный расчёт: ${params.get("calculation")}`;
     }
-    if (!operatorDetailsReady()) {
+    if (!leadCaptureReady()) {
       const submit = form.querySelector('[type="submit"]');
       if (submit) {
         submit.disabled = true;
         submit.textContent = "Приём заявок временно приостановлен";
       }
-      form.insertAdjacentHTML("afterbegin", '<div class="notice" data-operator-form-warning><strong>Форма пока недоступна.</strong> Владелец сайта должен опубликовать полные реквизиты оператора персональных данных.</div>');
+      form.insertAdjacentHTML("afterbegin", '<div class="notice" data-operator-form-warning><strong>Форма пока недоступна.</strong> До запуска необходимо завершить уведомление Роскомнадзора, проверить российскую инфраструктуру обработки данных и включить приём заявок в конфигурации.</div>');
       return;
     }
     form.addEventListener("submit", async (event) => {
@@ -512,6 +532,7 @@
     if (documentsColumn) {
       if (!$('a[href="/consent/"]', documentsColumn)) documentsColumn.insertAdjacentHTML("beforeend", '<p><a href="/consent/">Согласие на обработку ПДн</a></p>');
       if (!$('a[href="/cookies/"]', documentsColumn)) documentsColumn.insertAdjacentHTML("beforeend", '<p><a href="/cookies/">Cookie</a></p>');
+      if (!$('a[href="/terms/"]', documentsColumn)) documentsColumn.insertAdjacentHTML("beforeend", '<p><a href="/terms/">Условия оказания и возврата</a></p>');
       if (!$('[data-cookie-settings-link]', documentsColumn)) documentsColumn.insertAdjacentHTML("beforeend", '<p><a href="#" data-cookie-settings-link>Настройки cookie</a></p>');
     }
     const current = readConsent();
@@ -636,12 +657,9 @@
     };
 
     const cardMarkup = (item) => {
-      const baseUsd = cfg.pricingUsd.scenarioPackages.rvp[item.package];
-      const serviceUsd = baseUsd + complexityPrice(item.priceUsd, item.power);
-      const serviceRub = Math.round(serviceUsd * state.rates.USD_RUB);
+      const serviceRub = cfg.pricingRub.scenarioPackages.rvp[item.package] + complexityPriceRub(item.priceUsd, item.power);
       const vehiclePriceRub = Math.round(item.priceUsd * state.rates.USD_RUB);
-      const minimumBudgetUsd = item.priceUsd + serviceUsd;
-      const minimumBudgetRub = Math.round(minimumBudgetUsd * state.rates.USD_RUB);
+      const minimumBudgetRub = vehiclePriceRub + serviceRub;
       const rfUtil = rfUtilCostFromValues({
         age: item.age,
         engineType: item.engineType,
@@ -666,8 +684,8 @@
           <div class="car-example-price-block"><span>Ориентир цены авто</span><strong class="car-example-price">${money(vehiclePriceRub, "RUB")}</strong><small>≈ ${money(item.priceUsd)}</small></div>
         </div>
         <div class="example-economics">
-          <div><span>Сопровождение и проверка</span><strong>${money(serviceRub, "RUB")}</strong><small>≈ ${money(serviceUsd)} · ${packageLabels[item.package]}</small></div>
-          <div><span>Автомобиль с сопровождением</span><strong>${money(minimumBudgetRub, "RUB")}</strong><small>≈ ${money(minimumBudgetUsd)} · без внешних расходов</small></div>
+          <div><span>Сопровождение и проверка</span><strong>${money(serviceRub, "RUB")}</strong><small>фиксированная цена · ${packageLabels[item.package]}</small></div>
+          <div><span>Автомобиль с сопровождением</span><strong>${money(minimumBudgetRub, "RUB")}</strong><small>без обязательных и индивидуальных внешних расходов</small></div>
           <div class="example-comparison"><span>Расчётный утильсбор в РФ</span><strong>${money(rfUtil.amountRub, "RUB")}</strong><small>для сравнения · ${source.calculationYear} год</small></div>
         </div>
         <div class="example-actions"><a class="button" href="${calculationLink(item)}">Уточнить расчёт</a><a class="button secondary" href="/contacts/?car=${encodeURIComponent(`${item.title} ${item.year}`)}">Проверить объявление</a></div>

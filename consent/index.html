@@ -14,7 +14,7 @@
   <main id="main" class="section"><div class="narrow">
     <div class="eyebrow">Отдельное согласие · версия <span data-config="legal.personalDataConsentVersion"></span></div>
     <h1>Согласие на обработку персональных данных</h1>
-    <div class="notice" data-operator-missing hidden><strong>Документ нельзя использовать до заполнения реквизитов оператора.</strong> Полное наименование и адрес оператора обязательны и не могут подменяться брендом.</div>
+    <div class="notice" data-operator-missing hidden><strong>Документ нельзя использовать до заполнения подтверждённых реквизитов оператора.</strong> Бренд не заменяет ФИО, ИНН, регистрационный статус и адрес для корреспонденции оператора.</div>
     <div class="document">
       <section>
         <h2>1. Как предоставляется согласие</h2>
@@ -27,9 +27,12 @@
         <p><strong data-operator-name>БелУчёт</strong>, владелец сайта <span data-config="brand.domain"></span>. Контакт по вопросам данных: <a data-config-email="brand.privacyEmail" href="mailto:privacy@beluchet.ru"><span data-config="brand.privacyEmail"></span></a>.</p>
         <dl class="legal-details" data-operator-details hidden>
           <div><dt>Полное наименование</dt><dd data-config="legal.operator.fullName"></dd></div>
-          <div><dt>Адрес</dt><dd data-config="legal.operator.address"></dd></div>
           <div><dt>ИНН</dt><dd data-config="legal.operator.inn"></dd></div>
-          <div><dt>ОГРН / ОГРНИП</dt><dd data-config="legal.operator.registrationNumber"></dd></div>
+          <div data-operator-npd-row hidden><dt>Статус</dt><dd>Налогоплательщик налога на профессиональный доход (самозанятая)</dd></div>
+          <div data-operator-npd-row hidden><dt>Дата постановки на учёт НПД</dt><dd data-config="legal.operator.npdRegistrationDate"></dd></div>
+          <div data-operator-npd-row hidden><dt>Справка о постановке на учёт</dt><dd>№ <span data-config="legal.operator.npdCertificateNumber"></span> от <span data-config="legal.operator.npdCertificateDate"></span></dd></div>
+          <div data-operator-business-registration-row hidden><dt>ОГРН / ОГРНИП</dt><dd data-config="legal.operator.registrationNumber"></dd></div>
+          <div data-operator-address-row hidden><dt>Адрес для корреспонденции</dt><dd data-config="legal.operator.address"></dd></div>
         </dl>
       </section>
 
@@ -47,7 +50,8 @@
 
       <section>
         <h2>5. Кому могут быть поручены данные</h2>
-        <p>Поставщикам российского хостинга, API, CRM и электронной почты — исключительно для приёма, хранения и обработки заявки. Передача данных иностранному сервису уведомлений допускается только после выполнения требований к трансграничной передаче и отражения фактического получателя в <a href="/privacy/">политике обработки данных</a>.</p>
+        <p>Поставщикам российского хостинга, API, CRM, электронной почты и защищённого обмена документами — исключительно для приёма, хранения и обработки заявки. При переходе к исполнению договора необходимый объём данных может предоставляться внешним исполнителям отдельных согласованных операций на основании договора, поручения, отдельного согласия либо иного применимого основания. Условия и фактические категории получателей раскрываются в <a href="/privacy/">политике обработки данных</a>.</p>
+        <p>Трансграничная передача допускается только после выполнения предусмотренных законом процедур. Если они не выполнены, зарубежные каналы передачи данных не используются.</p>
         <p>Согласие не разрешает публикацию данных, передачу рекламным платформам или рекламные сообщения.</p>
       </section>
 
@@ -64,7 +68,7 @@
       </section>
     </div>
   </div></main>
-  <footer class="footer"><div class="narrow"><div class="footer-bottom" style="margin-top:0"><span>© <span data-current-year></span> БелУчёт</span><span><a href="/privacy/">Политика обработки данных</a> · <a href="/cookies/">Cookie</a></span></div></div></footer>
+  <footer class="footer"><div class="narrow"><div class="footer-bottom" style="margin-top:0"><span>© <span data-current-year></span> БелУчёт</span><span><a href="/privacy/">Политика обработки данных</a> · <a href="/cookies/">Cookie</a> · <a href="/terms/">Условия услуг</a></span></div></div></footer>
   <script src="/assets/runtime-config.js"></script><script src="/assets/config.js"></script><script src="/assets/site.js" defer></script>
 </body>
 </html>

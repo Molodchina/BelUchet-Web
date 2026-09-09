@@ -11,20 +11,24 @@ window.BELUCHET_CONFIG = {
     apiBaseUrl: window.BELUCHET_API_BASE_URL || (["127.0.0.1", "localhost"].includes(window.location.hostname) ? "http://127.0.0.1:8091" : "")
   },
   legal: {
-    privacyPolicyVersion: "2026-08-11",
-    personalDataConsentVersion: "2026-08-11",
-    disclaimerVersion: "2026-08-11",
+    privacyPolicyVersion: "2026-08-27",
+    personalDataConsentVersion: "2026-08-27",
+    disclaimerVersion: "2026-08-27",
+    personalDataRegistrationReady: false,
     operator: {
-      // Replace these values with the operator's verified legal details before publication.
-      fullName: "",
-      inn: "",
+      type: "npd",
+      fullName: "Митрофанова Светлана Ивановна",
+      inn: "504501379133",
       registrationNumber: "",
-      address: "",
+      address: "Российская Федерация, г. Москва, 2-й проезд Марьиной Рощи, д. 17, кв. 2",
+      npdRegistrationDate: "12.08.2026",
+      npdCertificateNumber: "116453239",
+      npdCertificateDate: "20.08.2026",
       workingHours: "Пн–Пт, 10:00–18:00 (МСК)"
     }
   },
   cookies: {
-    policyVersion: "2026-08-11",
+    policyVersion: "2026-08-27",
     consentName: "beluchet_cookie_consent_v1",
     maxAgeDays: 180
   },
@@ -33,43 +37,48 @@ window.BELUCHET_CONFIG = {
     marketingScripts: []
   },
   rates: {
-    updatedAt: "2026-08-09",
+    updatedAt: "2026-08-27",
     fallback: {
-      USD_RUB: 92,
+      USD_RUB: 80,
       EUR_RUB: 100,
       BYN_RUB: 28
     }
   },
-  pricingUsd: {
+  pricingRub: {
+    conversionBasis: {
+      sourceCurrency: "USD",
+      rubPerUsd: 80,
+      fixedAt: "2026-08-27"
+    },
     scenarioPackages: {
       rvp: {
-        self: 3690,
-        assisted: 4590,
-        full: 5890
+        self: 295200,
+        assisted: 367200,
+        full: 471200
       },
       vng: {
-        self: 4790,
-        assisted: 6290,
-        full: 7790
+        self: 383200,
+        assisted: 503200,
+        full: 623200
       },
       vngRealEstate: {
-        self: 6490,
-        assisted: 7990,
-        full: 9490
+        self: 519200,
+        assisted: 639200,
+        full: 759200
       }
     },
-    rvpExtraYear: 500,
+    rvpExtraYear: 40000,
     complexity: {
-      premium: 290,
-      special: 690,
+      premium: 23200,
+      special: 55200,
       premiumPriceUsd: 80000,
       specialPriceUsd: 150000,
       premiumPowerHp: 250,
       specialPowerHp: 400
     },
-    gaiHelp: 590,
-    annualControl: 290,
-    statusSupportYear: 4800
+    gaiHelp: 47200,
+    annualControl: 23200,
+    statusSupportYear: 384000
   },
   calculator: {
     annualTaxes: {

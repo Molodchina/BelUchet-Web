@@ -298,6 +298,7 @@ textarea { min-height: 118px; resize: vertical; }
 .case-kpi div { background: #f1f4f2; border-radius: 6px; padding: 12px; min-width: 0; }
 .case-kpi strong { display: block; font-size: 17px; overflow-wrap: anywhere; }
 
+.faq-scope { margin-bottom: 18px; }
 .faq-tools { display: flex; justify-content: flex-end; margin-bottom: 18px; }
 .toggle { display: inline-flex; gap: 10px; align-items: center; color: var(--muted); font-size: 14px; }
 .toggle input { width: 18px; min-height: 18px; }
@@ -308,6 +309,8 @@ textarea { min-height: 118px; resize: vertical; }
 .faq-item summary::after { content: "+"; position: absolute; right: 22px; top: 15px; font-size: 26px; color: var(--green); }
 .faq-item[open] summary::after { content: "−"; }
 .faq-answer { padding: 0 22px 20px; color: var(--ink-soft); max-width: 920px; }
+.faq-answer p { margin: 0; line-height: 1.65; }
+.faq-answer a { color: var(--green-dark); text-decoration: underline; text-underline-offset: 2px; }
 .legal-answer { display: none; }
 [data-faq-mode="legal"] .simple-answer { display: none; }
 [data-faq-mode="legal"] .legal-answer { display: block; }
@@ -346,7 +349,7 @@ textarea { min-height: 118px; resize: vertical; }
 .term-table .price-rub-reference { white-space: nowrap; }
 .tariff-choice b .price-rub-reference { color: var(--muted); }
 .document code { overflow-wrap: anywhere; }
-.hidden { display: none !important; }
+[hidden], .hidden { display: none !important; }
 
 .trust-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: #fff; }
 .trust-strip div { padding: 20px; border-right: 1px solid var(--line); }
