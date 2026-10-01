@@ -1,0 +1,44 @@
+name: Deploy BelUchet website
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: beluchet-web-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure deployment SSH key
+        env:
+          DEPLOY_KEY: ${{ secrets.BELUCHET_WEB_DEPLOY_KEY }}
+          KNOWN_HOSTS: ${{ secrets.BELUCHET_SSH_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+      - name: Upload and activate release
+        env:
+          RELEASE: ${{ github.sha }}
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes -p 2532 beluchet-web-deploy@86.110.212.127 "mkdir -p /srv/beluchet-web/staging/$RELEASE"
+          rsync -a --delete \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude '.DS_Store' \
+            --exclude 'docs/' \
+            --exclude 'README.md' \
+            --exclude 'LEGAL-COMPLIANCE.md' \
+            --exclude 'CNAME' \
+            -e 'ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes -p 2532' \
+            ./ "beluchet-web-deploy@86.110.212.127:/srv/beluchet-web/staging/$RELEASE/"
+          ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes -p 2532 beluchet-web-deploy@86.110.212.127 "sudo /usr/local/sbin/beluchet-deploy-web $RELEASE"
