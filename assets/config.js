@@ -8,13 +8,13 @@ window.BELUCHET_CONFIG = {
     city: "Минск и Минская область",
     company: "БелУчёт",
     privacyEmail: "privacy@beluchet.ru",
-    apiBaseUrl: window.BELUCHET_API_BASE_URL || (["127.0.0.1", "localhost"].includes(window.location.hostname) ? "http://127.0.0.1:8091" : "")
+    apiBaseUrl: window.BELUCHET_API_BASE_URL || (["127.0.0.1", "localhost"].includes(window.location.hostname) ? "http://127.0.0.1:8091" : "https://api.beluchet.ru")
   },
   legal: {
-    privacyPolicyVersion: "2026-08-27",
+    privacyPolicyVersion: "2026-10-04",
     personalDataConsentVersion: "2026-08-27",
     disclaimerVersion: "2026-08-27",
-    personalDataRegistrationReady: false,
+    personalDataRegistrationReady: true,
     operator: {
       type: "npd",
       fullName: "Митрофанова Светлана Ивановна",
