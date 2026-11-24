@@ -5,7 +5,6 @@
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const state = { rates: { ...cfg.rates.fallback } };
-  let renderCarExamples = null;
 
   function apiUrl(path) {
     return `${String(cfg.brand.apiBaseUrl || "").replace(/\/$/, "")}${path}`;
@@ -23,47 +22,28 @@
     return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(Number.isFinite(value) ? value : 0);
   }
 
-  function yearsLabel(value) {
-    if (value === 1) return "1 год";
-    if (value >= 2 && value <= 4) return `${value} года`;
-    return `${value} лет`;
-  }
+  const utmKeys = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
+  const initialSearch = new URLSearchParams(location.search);
+  // Preserve campaign labels across internal links, not arbitrary URLs or form fields.
+  const attribution = Object.fromEntries(utmKeys.map((key) => {
+    const value = initialSearch.get(key) || "";
+    return [key, /^[\p{L}\p{N} _+.~:-]{1,120}$/u.test(value) ? value : null];
+  }));
 
-  function renderPriceReferences() {
-    $$(".price, .price-rail .rail-item strong, .term-table td, .tariff-choice b").forEach((node) => {
-      if (!node.dataset.priceUsd) {
-        const source = node.textContent.trim();
-        const match = source.match(/\$\s*([\d\s]+)/);
-        if (!match) return;
-        node.dataset.priceUsd = match[1].replace(/\s/g, "");
-        node.dataset.priceAnnual = String(/\/год/.test(source));
-      }
-      const rubles = Number(node.dataset.priceUsd) * state.rates.USD_RUB;
-      let reference = $(".price-rub-reference", node);
-      if (!reference) {
-        reference = document.createElement("small");
-        reference.className = "price-rub-reference";
-        node.appendChild(reference);
-      }
-      reference.textContent = `≈ ${money(rubles, "RUB")}${node.dataset.priceAnnual === "true" ? "/год" : ""}`;
-    });
-  }
-
-  async function initPriceReferences() {
-    if (!$(".price, .price-rail .rail-item strong, .term-table td, .tariff-choice b, [data-car-examples]")) return;
-    renderPriceReferences();
-    if ($("#calculator-form")) return;
-    try {
-      const response = await fetch(apiUrl("/api/v1/rates"), { cache: "no-store" });
-      const data = await response.json();
-      if (response.ok && data?.rates?.USD_RUB) {
-        state.rates = { ...state.rates, ...data.rates };
-        renderPriceReferences();
-        renderCarExamples?.();
-      }
-    } catch (error) {
-      // The visible ruble reference remains based on the dated fallback rate.
+  function withAttribution(path) {
+    const url = new URL(path, location.origin);
+    if (url.origin !== location.origin || !/^\/(?:$|(?:calculator|cases|contacts|faq|process|services)\/$)/.test(url.pathname)) return path;
+    for (const [key, value] of Object.entries(attribution)) {
+      if (value && !url.searchParams.has(key)) url.searchParams.set(key, value);
     }
+    return url.pathname + url.search + url.hash;
+  }
+
+  function initAttribution() {
+    if (!Object.values(attribution).some(Boolean)) return;
+    $$('a[href^="/"]:not([href^="//"]):not([data-contact-calculation])').forEach((link) => {
+      link.setAttribute("href", withAttribution(link.getAttribute("href")));
+    });
   }
 
   function setConfigText() {
@@ -140,63 +120,11 @@
     });
   }
 
-  async function loadRates() {
-    const status = $("[data-rate-status]");
-    try {
-      const apiResponse = await fetch(apiUrl("/api/v1/rates"), { cache: "no-store" });
-      const apiData = await apiResponse.json();
-      if (apiResponse.ok && apiData?.rates) {
-        state.rates = { ...state.rates, ...apiData.rates };
-        if (status) status.textContent = apiData.source === "CBR" ? "Ориентир цены автомобиля обновлён по курсу ЦБ РФ; цены услуг зафиксированы в рублях." : "Для ориентира цены автомобиля используется резервный курс; цены услуг зафиксированы в рублях.";
-        renderPriceReferences();
-        calculate();
-        return;
-      }
-      const response = await fetch("https://www.cbr.ru/scripts/XML_daily.asp", { cache: "no-store" });
-      if (!response.ok) throw new Error("rate request failed");
-      const xml = await response.text();
-      const doc = new DOMParser().parseFromString(xml, "application/xml");
-      const findRate = (code) => {
-        const item = Array.from(doc.querySelectorAll("Valute")).find((row) => row.querySelector("CharCode")?.textContent === code);
-        const nominal = Number(item?.querySelector("Nominal")?.textContent || 1);
-        const value = Number((item?.querySelector("Value")?.textContent || "").replace(",", "."));
-        return value / nominal;
-      };
-      state.rates.USD_RUB = findRate("USD") || state.rates.USD_RUB;
-      state.rates.EUR_RUB = findRate("EUR") || state.rates.EUR_RUB;
-      renderPriceReferences();
-      if (status) status.textContent = "Ориентир цены автомобиля обновлён по курсу ЦБ РФ; цены услуг зафиксированы в рублях.";
-    } catch (error) {
-      if (status) status.textContent = "Для ориентира цены автомобиля используется резервный курс; цены услуг зафиксированы в рублях.";
-    }
-    calculate();
-  }
-
-  function bandIndex(value, bands) {
-    const index = bands.findIndex((maxValue) => value <= maxValue);
-    return index === -1 ? bands.length : index;
-  }
-
-  function annualBelarusTax(maxMassKg, comfortVehicle) {
-    const rules = cfg.calculator.annualTaxes.belarus;
-    const band = rules.passengerCarRatesByn.find((item) => maxMassKg <= item.maxMassKg)
-      || rules.passengerCarRatesByn[rules.passengerCarRatesByn.length - 1];
-    const multiplier = comfortVehicle ? rules.comfortMultiplier : 1;
-    return { annualByn: band.annualByn * multiplier, multiplier };
-  }
-
-  function scenarioCosts(form) {
-    const packageType = form.elements.package.value;
-    const labels = {
-      self: "Самостоятельный",
-      assisted: "С сопровождением",
-      full: "Полный цикл"
-    };
-    return {
-      base: cfg.pricingRub.scenarioPackages.rvp[packageType],
-      label: `${labels[packageType]} · РВП 1 год`
-    };
-  }
+  const packageLabels = {
+    self: "Самостоятельный",
+    assisted: "С сопровождением",
+    full: "Полный цикл"
+  };
 
   function complexityPriceRub(carPriceUsd, power) {
     const rules = cfg.pricingRub.complexity;
@@ -205,182 +133,48 @@
     return 0;
   }
 
-  function rfUtilCostFromValues({ age, engineType, power, volume, calculationYear }) {
-    const rules = cfg.calculator.rfUtil;
-    const normalizedAge = age === "under3" ? "under3" : "over3";
-    const normalizedPower = Math.max(0, Number(power || 0));
-    const normalizedVolume = Math.max(0, Number(volume || 0));
-
-    let coefficient;
-    if (engineType === "ev") {
-      coefficient = rules.evCommercialCoefficients[normalizedAge][bandIndex(normalizedPower, rules.evPowerBandsHp)];
-    } else {
-      const volumeRow = rules.iceCommercialCoefficients.find((row) => normalizedVolume <= row.maxVolume)
-        || rules.iceCommercialCoefficients[rules.iceCommercialCoefficients.length - 1];
-      coefficient = volumeRow[normalizedAge][bandIndex(normalizedPower, rules.powerBandsHp)];
-    }
-
-    const normalizedYear = Number(calculationYear || 2026);
-    if (normalizedYear < rules.coefficientBaseYear) {
-      coefficient = Math.round((coefficient / 1.1) * 100) / 100;
-    }
-
-    return {
-      coefficient,
-      amountRub: Math.round(coefficient * rules.baseRateRub),
-      age: normalizedAge,
-      calculationYear: normalizedYear
-    };
-  }
-
-  function rfUtilCost(form) {
-    return rfUtilCostFromValues({
-      age: form.elements.age.value,
-      engineType: form.elements.engineType.value,
-      power: form.elements.power.value,
-      volume: form.elements.volume.value,
-      calculationYear: form.elements.calculationYear?.value
-    });
-  }
-
-  function medianRfTaxRate(power) {
-    const bands = cfg.calculator.annualTaxes.rf.medianRateBandsRub;
-    const band = bands.find((item) => power <= item.maxPowerHp) || bands[bands.length - 1];
-    return band.ratePerHpRub;
-  }
-
-  function calculate() {
-    const form = $("#calculator-form");
-    if (!form) return;
-
-    const carPriceUsd = Math.max(0, Number(form.elements.price.value || 0));
-    const volume = Number(form.elements.volume.value || 0);
-    const power = Number(form.elements.power.value || 0);
-    const basis = scenarioCosts(form);
-    const complexity = complexityPriceRub(carPriceUsd, power);
-    const packageType = form.elements.package.value;
-    const gai = form.elements.gai?.checked && packageType === "self" ? cfg.pricingRub.gaiHelp : 0;
-    const annual = form.elements.annual?.checked ? cfg.pricingRub.annualControl : 0;
-    const optionalExtras = gai + annual;
-    const extras = complexity + optionalExtras;
-    const scenarioRub = basis.base + extras;
-    const rfUtil = rfUtilCost(form);
-    const benefitRub = rfUtil.amountRub - scenarioRub;
-    const rfTaxRate = medianRfTaxRate(power);
-    const comparisonYears = Math.max(1, Number(form.elements.comparisonYears?.value || 1));
-    const maxMassKg = Math.max(1, Number(form.elements.maxMassKg?.value || cfg.calculator.annualTaxes.belarus.defaultMassKg));
-    const comfortVehicle = carPriceUsd > cfg.calculator.annualTaxes.belarus.comfortPriceThresholdUsd;
-    const rfAnnualTaxRub = Math.round(power * rfTaxRate);
-    const byAnnualTax = annualBelarusTax(maxMassKg, comfortVehicle);
-    const byAnnualTaxRub = Math.round(byAnnualTax.annualByn * state.rates.BYN_RUB);
-    const annualSavingRub = rfAnnualTaxRub - byAnnualTaxRub;
-    const annualPeriodSavingRub = annualSavingRub * comparisonYears;
-    const totalBenefitRub = benefitRub + annualPeriodSavingRub;
-    const engineType = form.elements.engineType.value;
-    const ageLabel = form.elements.age.value === "under3" ? "до 3 лет" : "старше 3 лет";
-    const engineLabel = engineType === "ev" ? "электро / последовательный гибрид" : "ДВС / иной гибрид";
-
-    const values = {
-      "[data-out-total-benefit]": money(totalBenefitRub, "RUB"),
-      "[data-out-benefit]": money(benefitRub, "RUB"),
-      "[data-out-util-rf]": money(rfUtil.amountRub, "RUB"),
-      "[data-out-formula]": `коэффициент ${String(rfUtil.coefficient).replace(".", ",")} × ${money(cfg.calculator.rfUtil.baseRateRub, "RUB")}`,
-      "[data-out-scenario]": money(scenarioRub, "RUB"),
-      "[data-out-base]": money(basis.base, "RUB"),
-      "[data-out-extras]": money(optionalExtras, "RUB"),
-      "[data-out-basis]": basis.label,
-      "[data-out-vehicle]": engineType === "ev" ? `${engineLabel}, ${number(power)} л.с., ${ageLabel}` : `${number(volume)} см³, ${number(power)} л.с., ${ageLabel}`,
-      "[data-out-rate-kind]": "обычный коэффициент",
-      "[data-out-rf-annual-tax]": `${money(rfAnnualTaxRub, "RUB")}/год`,
-      "[data-out-by-annual-tax-rub]": `${money(byAnnualTaxRub, "RUB")}/год`,
-      "[data-out-by-annual-tax-byn]": `${money(byAnnualTax.annualByn, "BYN")}/год`,
-      "[data-out-annual-saving]": money(annualSavingRub, "RUB"),
-      "[data-out-annual-period-saving]": money(annualPeriodSavingRub, "RUB"),
-      "[data-out-comparison-period]": yearsLabel(comparisonYears),
-      "[data-out-max-mass]": `масса ${number(maxMassKg)} кг${byAnnualTax.multiplier > 1 ? `, коэффициент ×${byAnnualTax.multiplier}` : ""}`,
-      "[data-out-comfort]": comfortVehicle ? "повышенная комфортность по порогу цены" : "обычная категория по порогу цены",
-      "[data-out-rf-tax-formula]": `${number(power)} л.с. × ${money(rfTaxRate, "RUB")}/л.с. (медианная модель)`
-    };
-    Object.entries(values).forEach(([selector, value]) => {
-      $$(selector).forEach((node) => {
-        node.textContent = value;
-      });
-    });
-    $$('[data-out-benefit]').forEach((node) => node.classList.toggle("negative", benefitRub < 0));
-    const totalBenefitNode = $("[data-out-total-benefit]");
-    totalBenefitNode?.classList.toggle("negative", totalBenefitRub < 0);
-    $$('[data-out-annual-saving], [data-out-annual-period-saving]').forEach((node) => {
-      node.classList.toggle("negative", annualSavingRub < 0);
-    });
-    const totalBenefitLabel = $("[data-total-benefit-label]");
-    if (totalBenefitLabel) totalBenefitLabel.textContent = totalBenefitRub >= 0 ? "Итоговая потенциальная выгода" : "Итоговая разница по выбранным условиям";
-    const benefitLabel = $("[data-benefit-label]");
-    if (benefitLabel) benefitLabel.textContent = benefitRub >= 0 ? "Потенциальная выгода после выбранного тарифа" : "Разница после выбранного тарифа";
-    const complexityRow = $("[data-complexity-row]");
-    if (complexityRow) complexityRow.classList.toggle("hidden", complexity === 0);
-    const complexityNode = $("[data-out-complexity]");
-    if (complexityNode) complexityNode.textContent = money(complexity, "RUB");
-    const volumeField = $("[data-volume-field]");
-    if (volumeField) volumeField.classList.toggle("hidden", engineType === "ev");
-    const massSummary = $("[data-mass-summary]");
-    if (massSummary) massSummary.textContent = `${number(maxMassKg)} кг`;
-    const extrasSummary = $("[data-extras-summary]");
-    if (extrasSummary) {
-      const selectedExtras = [form.elements.gai?.checked, form.elements.annual?.checked].filter(Boolean).length;
-      extrasSummary.textContent = selectedExtras ? `выбрано: ${selectedExtras}` : "не выбраны";
-    }
-
-    const contactLink = $("[data-calculator-contact]");
-    if (contactLink) {
-      const params = new URLSearchParams({
-        car: engineType === "ev" ? `${engineLabel}, ${power} л.с.` : `${volume} см³, ${power} л.с.`,
-        budget: carPriceUsd ? `${number(carPriceUsd)} USD` : "",
-        package: packageType,
-        basis: form.elements.basis.value === "vng-realestate" ? "vng" : form.elements.basis.value,
-        calculation: `${engineLabel}; ${ageLabel}; цена автомобиля ${money(carPriceUsd)}; ориентир утильсбора РФ для ${rfUtil.calculationYear} года: ${money(rfUtil.amountRub, "RUB")}; тариф ${basis.label}: ${money(scenarioRub, "RUB")}; разовая выгода после тарифа: ${money(benefitRub, "RUB")}; транспортный налог РФ по медианной ставке ${money(rfTaxRate, "RUB")}/л.с.: ${money(rfAnnualTaxRub, "RUB")}/год; транспортный налог РБ при массе ${number(maxMassKg)} кг (${comfortVehicle ? "повышенная комфортность по порогу цены" : "обычная категория"}): ${money(byAnnualTaxRub, "RUB")}/год; итоговая потенциальная выгода за ${yearsLabel(comparisonYears)}: ${money(totalBenefitRub, "RUB")}.`
-      });
-      contactLink.href = `/contacts/?${params.toString()}`;
-    }
-  }
-
   function initCalculator() {
     const form = $("#calculator-form");
     if (!form) return;
-    const params = new URLSearchParams(window.location.search);
-    const requestedPackage = params.get("package");
-    if (["self", "assisted", "full"].includes(requestedPackage)) {
-      form.elements.package.value = requestedPackage;
-    }
-    const allowedSelectValues = {
-      engineType: ["ice", "ev"],
-      age: ["under3", "over3"],
-      calculationYear: cfg.calculator.rfUtil.supportedYears.map(String),
-      comparisonYears: ["1", "3", "5"]
-    };
-    Object.entries(allowedSelectValues).forEach(([name, values]) => {
-      const value = params.get(name);
-      if (value && values.includes(value) && form.elements[name]) form.elements[name].value = value;
-    });
-    const numericLimits = {
-      volume: [1, 10000],
-      power: [1, 2000],
-      price: [0, 10000000],
-      maxMassKg: [1, 100000]
-    };
-    Object.entries(numericLimits).forEach(([name, [min, max]]) => {
-      const rawValue = params.get(name);
-      if (rawValue === null) return;
+    const requestedPackage = initialSearch.get("package");
+    if (Object.hasOwn(packageLabels, requestedPackage)) form.elements.package.value = requestedPackage;
+    for (const [name, [min, max]] of Object.entries({ price: [0, 10000000], power: [1, 2000] })) {
+      const rawValue = initialSearch.get(name);
       const value = Number(rawValue);
-      if (Number.isFinite(value) && value >= min && value <= max && form.elements[name]) form.elements[name].value = String(value);
+      if (rawValue !== null && rawValue.trim() && Number.isFinite(value) && value >= min && value <= max) {
+        form.elements[name].value = String(value);
+      }
+    }
+    const calculate = () => {
+      const packageType = form.elements.package.value;
+      const base = cfg.pricingRub.scenarioPackages.rvp[packageType];
+      const complexity = complexityPriceRub(
+        form.elements.price.validity.valid ? Number(form.elements.price.value || 0) : 0,
+        form.elements.power.validity.valid ? Number(form.elements.power.value || 0) : 0
+      );
+      const canAddRegistration = packageType === "self";
+      form.elements.gai.disabled = !canAddRegistration;
+      if (!canAddRegistration) form.elements.gai.checked = false;
+      $("[data-gai-description]").textContent = canAddRegistration
+        ? `Доплата ${money(cfg.pricingRub.gaiHelp, "RUB")} для самостоятельного тарифа.`
+        : "В выбранном тарифе помощь уже входит в согласованный объём.";
+      const extras = (form.elements.gai.checked ? cfg.pricingRub.gaiHelp : 0)
+        + (form.elements.annual.checked ? cfg.pricingRub.annualControl : 0);
+      const total = base + complexity + extras;
+      const values = { scenario: `от ${money(total, "RUB")}`, basis: packageLabels[packageType],
+        base: money(base, "RUB"), complexity: money(complexity, "RUB"), extras: money(extras, "RUB") };
+      for (const [key, value] of Object.entries(values)) $(`[data-out-${key}]`).textContent = value;
+      const params = new URLSearchParams({ package: packageType, basis: "rvp", estimate: String(total) });
+      $("[data-contact-calculation]").href = withAttribution(`/contacts/?${params}`);
+    };
+    $$("[data-package-price]", form).forEach((price) => {
+      price.textContent = `от ${money(cfg.pricingRub.scenarioPackages.rvp[price.dataset.packagePrice], "RUB")}`;
     });
+    form.addEventListener("submit", (event) => event.preventDefault());
     form.addEventListener("input", calculate);
     form.addEventListener("change", calculate);
-    $("[data-reset-calculator]")?.addEventListener("click", () => {
-      form.reset();
-      calculate();
-    });
+    $("[data-reset-calculator]").addEventListener("click", () => { form.reset(); calculate(); });
     calculate();
-    loadRates();
   }
 
   function initFaqModes() {
@@ -395,12 +189,18 @@
     const form = $("#lead-form");
     if (!form) return;
     form.elements.consent?.addEventListener("change", () => form.elements.consent.setCustomValidity(""));
-    const params = new URLSearchParams(window.location.search);
+    const feedback = $("[data-lead-feedback]", form);
+    let pending = false;
     for (const name of ["car", "budget", "package", "basis"]) {
-      if (params.get(name) && form.elements[name]) form.elements[name].value = params.get(name);
+      const value = initialSearch.get(name);
+      if (!value || !form.elements[name]) continue;
+      const field = form.elements[name];
+      if (field instanceof HTMLSelectElement && !Array.from(field.options).some((option) => option.value === value)) continue;
+      field.value = field.maxLength > 0 ? value.slice(0, field.maxLength) : value;
     }
-    if (params.get("calculation") && form.elements.comment && !form.elements.comment.value) {
-      form.elements.comment.value = `Предварительный расчёт: ${params.get("calculation")}`;
+    const requestedEstimate = initialSearch.get("estimate");
+    if (/^\d{1,7}$/.test(requestedEstimate || "") && Object.hasOwn(packageLabels, form.elements.package.value) && !form.elements.comment.value) {
+      form.elements.comment.value = `Ориентир стоимости услуг из калькулятора: ${money(Number(requestedEstimate), "RUB")}.`;
     }
     if (!leadCaptureReady()) {
       const submit = form.querySelector('[type="submit"]');
@@ -414,7 +214,7 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const data = new FormData(form);
-      if (data.get("website")) return;
+      if (pending || data.get("website")) return;
       if (data.get("consent") !== "yes") {
         form.elements.consent?.setCustomValidity("Подтвердите отдельное согласие на обработку персональных данных.");
         form.reportValidity();
@@ -435,52 +235,57 @@
         comment: [data.get("comment"), data.get("listing_url") ? `Ссылка на объявление: ${data.get("listing_url")}` : ""].filter(Boolean).join("\n"),
         client_name: data.get("name"),
         preferred_contact: "auto",
-        calculation_version: `${cfg.calculator.rfUtil.version}+annual-${cfg.calculator.annualTaxes.version}`,
+        calculation_version: cfg.calculator.serviceEstimateVersion,
         consent_given: data.get("consent") === "yes",
         consent_version: cfg.legal.personalDataConsentVersion,
         privacy_policy_version: cfg.legal.privacyPolicyVersion,
         consent_timestamp: new Date().toISOString(),
         consent_source: `${window.location.origin}${window.location.pathname}`,
-        utm_source: params.get("utm_source"),
-        utm_medium: params.get("utm_medium"),
-        utm_campaign: params.get("utm_campaign"),
-        utm_content: params.get("utm_content"),
-        utm_term: params.get("utm_term"),
+        utm_source: attribution.utm_source,
+        utm_medium: attribution.utm_medium,
+        utm_campaign: attribution.utm_campaign,
+        utm_content: attribution.utm_content,
+        utm_term: attribution.utm_term,
         website: data.get("website")
       };
+      pending = true;
+      if (feedback) feedback.textContent = "";
       if (submit) {
         submit.disabled = true;
         submit.textContent = "Отправляем...";
       }
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 12000);
       try {
         const response = await fetch(apiUrl("/api/v1/leads"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+          signal: controller.signal
         });
-        if (response.ok) {
-          window.location.href = "/thank-you/";
-          return;
+        if (!response.ok) throw new Error("Lead was not acknowledged");
+        // Set only an anonymous marker after an acknowledged POST. A direct or repeated
+        // visit to /thank-you/ must not count as a lead.
+        if (metrikaId() && allowsAnalytics(readConsent())) {
+          try { sessionStorage.setItem("beluchet-lead-sent", "1"); } catch (_) {}
         }
-      } catch (error) {
-        // The email fallback keeps the form usable on static hosting.
-      }
-      const body = encodeURIComponent([
-        "Заявка БелУчёт",
-        `Имя: ${payload.name}`,
-        `Контакт: ${payload.contact}`,
-        `Авто: ${payload.car || "не указано"}`,
-        `Ссылка: ${data.get("listing_url") || "не указана"}`,
-        `Бюджет: ${payload.budget || "не указан"}`,
-        `Комментарий: ${payload.comment || "нет"}`,
-        `Согласие на обработку ПДн: версия ${payload.consent_version}, ${payload.consent_timestamp}`
-      ].join("\n"));
-      window.location.href = `mailto:${cfg.brand.email}?subject=${encodeURIComponent("Заявка БелУчёт")}&body=${body}`;
-      if (submit) {
-        submit.disabled = false;
-        submit.textContent = submitLabel;
+        location.assign("/thank-you/");
+      } catch (_) {
+        if (feedback) {
+          feedback.textContent = "Не удалось подтвердить отправку. Данные остались в форме. Попробуйте ещё раз немного позже.";
+          feedback.focus();
+        }
+        pending = false;
+        if (submit) {
+          submit.disabled = false;
+          submit.textContent = submitLabel;
+        }
+      } finally {
+        window.clearTimeout(timeout);
       }
     });
+    const submit = form.querySelector('[type="submit"]');
+    if (submit) submit.disabled = false;
   }
 
   function readConsent() {
@@ -501,6 +306,57 @@
         document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
         document.cookie = `${name}=; Max-Age=0; Path=/; Domain=.${location.hostname}; SameSite=Lax`;
       }
+    });
+  }
+
+  function metrikaId() {
+    const raw = String(cfg.analytics?.yandexMetrikaId || "");
+    const documentedVersion = cfg.analytics?.metrikaConsentPolicyVersion;
+    // A real ID alone is not sufficient. The release must include the provider
+    // disclosure and a new cookie policy version so old permissions never apply.
+    if (!/^[1-9]\d{0,9}$/.test(raw) || !documentedVersion || documentedVersion !== cfg.cookies.policyVersion ||
+        documentedVersion === "2026-08-27") return null;
+    return Number(raw);
+  }
+
+  function allowsAnalytics(consent) {
+    return consent?.version === cfg.cookies.policyVersion && consent.analytics === true && navigator.globalPrivacyControl !== true;
+  }
+
+  function initMetrika() {
+    const id = metrikaId();
+    if (!id) return;
+    let leadSent = false;
+    if (location.pathname === "/thank-you/") {
+      try {
+        leadSent = sessionStorage.getItem("beluchet-lead-sent") === "1";
+        sessionStorage.removeItem("beluchet-lead-sent");
+      } catch (_) {}
+    }
+    // Keep analytics off the intake page and URLs with any dynamic parameters.
+    if (location.search || location.hash || !/^\/(?:$|(?:calculator|cases|faq|process|services|thank-you)\/$)/.test(location.pathname)) return;
+    let loaded = false;
+    document.addEventListener("beluchet:consent", (event) => {
+      if (!allowsAnalytics(event.detail)) {
+        if (loaded) location.reload(); // Tear down the running third-party script.
+        return;
+      }
+      if (loaded) return;
+      loaded = true;
+      if (!window.ym) {
+        const queue = function () { (queue.a = queue.a || []).push(arguments); };
+        queue.l = Date.now();
+        window.ym = queue;
+      }
+      window.ym(id, "init", { defer: true, webvisor: false, clickmap: false, trackLinks: false,
+        trackHash: false, accurateTrackBounce: false, sendTitle: false, ecommerce: false });
+      window.ym(id, "hit", location.origin + location.pathname, { title: "", referer: location.origin + "/" });
+      if (leadSent) window.ym(id, "reachGoal", "lead_success");
+      const script = document.createElement("script");
+      script.async = true;
+      script.referrerPolicy = "no-referrer";
+      script.src = "https://mc.yandex.ru/metrika/tag.js";
+      document.head.appendChild(script);
     });
   }
 
@@ -537,7 +393,7 @@
     }
     const current = readConsent();
     const gpcEnabled = navigator.globalPrivacyControl === true;
-    const analyticsConfigured = Boolean(cfg.analytics?.yandexMetrikaId);
+    const analyticsConfigured = Boolean(metrikaId());
     const marketingConfigured = Array.isArray(cfg.analytics?.marketingScripts) && cfg.analytics.marketingScripts.length > 0;
     const optionalConfigured = analyticsConfigured || marketingConfigured;
     const root = document.createElement("div");
@@ -585,7 +441,7 @@
     $$('[data-cookie-settings-link]').forEach((link) => link.addEventListener("click", (event) => { event.preventDefault(); openSettings(); }));
     if (current?.version === cfg.cookies.policyVersion) {
       banner.hidden = true;
-      activateConsentFeatures(current);
+      activateConsentFeatures(gpcEnabled ? { ...current, analytics: false, marketing: false } : current);
     } else if (gpcEnabled) {
       writeConsent({ analytics: false, marketing: false });
       banner.hidden = true;
@@ -604,7 +460,7 @@
       result.hidden = false;
       const basisText = data.get("basis") === "unsure" ? "Мы предложим подходящий вариант после уточнения документов." : "Выбранный вариант учтём в расчёте.";
       const visitText = data.get("visits") === "minimum" ? "Подберём формат с минимальным количеством самостоятельных визитов." : "Можно выбрать экономичный формат и часть этапов пройти самостоятельно.";
-      result.innerHTML = `<strong>Следующий шаг — персональный расчёт.</strong><p>${basisText} ${visitText}</p><a class="button" href="/calculator/">Перейти к калькулятору</a>`;
+      result.innerHTML = `<strong>Следующий шаг — персональный расчёт.</strong><p>${basisText} ${visitText}</p><a class="button" href="${withAttribution("/calculator/")}">Перейти к калькулятору</a>`;
     });
   }
 
@@ -628,11 +484,6 @@
     const source = window.BELUCHET_CAR_EXAMPLES;
     if (!targets.length || !Array.isArray(source?.items)) return;
 
-    const packageLabels = {
-      self: "Самостоятельный",
-      assisted: "С сопровождением",
-      full: "Полный цикл"
-    };
     const segmentFilter = $("[data-example-segment]");
     const budgetFilter = $("[data-example-budget]");
     const searchFilter = $("[data-example-search]");
@@ -643,56 +494,26 @@
     }
 
     const calculationLink = (item) => {
-      const params = new URLSearchParams({
-        engineType: item.engineType,
-        age: item.age,
-        volume: String(Math.max(1, item.volume || 1)),
-        power: String(item.power),
-        price: String(item.priceUsd),
-        calculationYear: String(source.calculationYear || 2026),
-        comparisonYears: "3",
-        package: item.package
-      });
-      return `/calculator/?${params.toString()}`;
+      const params = new URLSearchParams({ power: String(item.power), price: String(item.priceUsd), package: item.package });
+      return withAttribution(`/calculator/?${params}`);
     };
 
     const cardMarkup = (item) => {
       const serviceRub = cfg.pricingRub.scenarioPackages.rvp[item.package] + complexityPriceRub(item.priceUsd, item.power);
-      const vehiclePriceRub = Math.round(item.priceUsd * state.rates.USD_RUB);
-      const minimumBudgetRub = vehiclePriceRub + serviceRub;
-      const rfUtil = rfUtilCostFromValues({
-        age: item.age,
-        engineType: item.engineType,
-        power: item.power,
-        volume: item.volume,
-        calculationYear: source.calculationYear
-      });
-      const differenceRub = rfUtil.amountRub - serviceRub;
-      const hasBenefit = differenceRub >= 0;
       const vehicleDetails = item.engineType === "ev"
         ? `${item.engineLabel}, ${number(item.power)} л.с.`
         : `${item.engineLabel}, ${number(item.power)} л.с., ${number(item.volume)} см³`;
 
       return `<article class="card car-example-card" data-example-id="${item.id}">
-        <div class="car-example-benefit ${hasBenefit ? "" : "negative"}">
-          <span>${hasBenefit ? "Возможная выгода до" : "Выгода по этому расчёту"}</span>
-          <strong>${money(Math.max(0, differenceRub), "RUB")}</strong>
-          <small>${hasBenefit ? "после стоимости сопровождения" : "расходы нужно уточнить индивидуально"}</small>
-        </div>
         <div class="car-example-head">
           <div><span class="tag">${item.segmentLabel}</span><h3>${item.title}</h3><p>${item.year} · ${vehicleDetails}</p></div>
-          <div class="car-example-price-block"><span>Ориентир цены авто</span><strong class="car-example-price">${money(vehiclePriceRub, "RUB")}</strong><small>≈ ${money(item.priceUsd)}</small></div>
         </div>
-        <div class="example-economics">
-          <div><span>Сопровождение и проверка</span><strong>${money(serviceRub, "RUB")}</strong><small>фиксированная цена · ${packageLabels[item.package]}</small></div>
-          <div><span>Автомобиль с сопровождением</span><strong>${money(minimumBudgetRub, "RUB")}</strong><small>без обязательных и индивидуальных внешних расходов</small></div>
-          <div class="example-comparison"><span>Расчётный утильсбор в РФ</span><strong>${money(rfUtil.amountRub, "RUB")}</strong><small>для сравнения · ${source.calculationYear} год</small></div>
-        </div>
-        <div class="example-actions"><a class="button" href="${calculationLink(item)}">Уточнить расчёт</a><a class="button secondary" href="/contacts/?car=${encodeURIComponent(`${item.title} ${item.year}`)}">Проверить объявление</a></div>
+        <div class="example-economics"><div><span>Ориентир стоимости сопровождения</span><strong>от ${money(serviceRub, "RUB")}</strong><small>${packageLabels[item.package]} · цена услуг, без внешних расходов</small></div></div>
+        <div class="example-actions"><a class="button" href="${calculationLink(item)}">Уточнить стоимость</a><a class="button secondary" href="${withAttribution(`/contacts/?car=${encodeURIComponent(`${item.title} ${item.year}`)}`)}">Проверить объявление</a></div>
       </article>`;
     };
 
-    renderCarExamples = () => {
+    const renderCarExamples = () => {
       const segment = segmentFilter?.value || "all";
       const maxBudget = Number(budgetFilter?.value || 0);
       const query = String(searchFilter?.value || "").trim().toLowerCase();
@@ -721,12 +542,14 @@
   }
 
   setConfigText();
+  $$("[data-telegram-link]").forEach((link) => { link.href = cfg.brand.telegram; });
   initLegalDetails();
-  initPriceReferences();
   initNavigation();
+  initAttribution();
   initCalculator();
   initFaqModes();
   initLeadForm();
+  initMetrika();
   initCookieConsent();
   initBasisCheck();
   initRealCases();

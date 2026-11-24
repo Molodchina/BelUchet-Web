@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Калькулятор итоговой выгоды БелУчёт — разовые и ежегодные платежи</title>
-  <meta name="description" content="Рассчитайте итоговую потенциальную выгоду: утильсбор РФ, стоимость сценария БелУчёт и разницу ежегодного транспортного налога в России и Беларуси.">
+  <title>Калькулятор стоимости услуг БелУчёт</title>
+  <meta name="description" content="Рассчитайте ориентировочную стоимость услуг БелУчёта по выбранному формату сопровождения.">
   <link rel="canonical" href="https://beluchet.ru/calculator/">
   <link rel="stylesheet" href="/assets/styles.css">
 </head>
@@ -19,117 +19,55 @@
     </div>
   </header>
 
-  <main id="main" class="section">
+  <main id="main" class="section white">
     <div class="wrap">
       <div class="section-head">
-        <div><div class="eyebrow">Предварительная экономика</div><h1>Посчитайте итоговую выгоду — сразу и за срок владения</h1></div>
-        <p>Сравним разовый утильсбор, стоимость выбранного сценария и ежегодный транспортный налог в РФ и Беларуси.</p>
+        <div><div class="eyebrow">Предварительный расчёт</div><h1>Сколько стоят услуги БелУчёта</h1></div>
+        <p>Выберите объём помощи. Калькулятор не определяет возможность регистрации и не рассчитывает обязательные платежи.</p>
       </div>
-
       <div class="calculator-shell">
         <form id="calculator-form" class="card calc-form">
-          <div class="calc-intro"><h3>Параметры расчёта</h3><p class="muted">Укажите автомобиль и выберите тариф. Остальные допущения калькулятор применит автоматически.</p></div>
+          <div class="calc-intro"><h2>Параметры расчёта</h2><p class="muted">Базовый ориентир рассчитан для сопровождения РВП на один год. Подходящее основание уточняется после проверки.</p></div>
           <div class="calc-body">
             <section class="form-section">
-              <div class="form-section-title"><h4>Автомобиль</h4><span>Шаг 1 из 2</span></div>
-              <div class="form-grid three">
-                <label><span class="label-with-help">Тип двигателя <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">От типа двигателя зависит таблица коэффициентов утильсбора. Обычный гибрид считается как автомобиль с ДВС.</span></span></span><select name="engineType"><option value="ice">ДВС / обычный гибрид</option><option value="ev">Электро / последовательный гибрид</option></select></label>
-                <label><span class="label-with-help">Возраст <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">Для автомобилей до трёх лет и старше действуют разные коэффициенты утильсбора.</span></span></span><select name="age"><option value="under3">до 3 лет</option><option value="over3">старше 3 лет</option></select></label>
-                <label data-volume-field><span class="label-with-help">Объём двигателя, см³ <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">Для ДВС объём определяет строку таблицы утильсбора. Для электромобиля поле скрывается.</span></span></span><input name="volume" type="number" min="1" value="3000" inputmode="numeric"></label>
-                <label><span class="label-with-help">Мощность, л.с. <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">Мощность влияет на утильсбор и выбирает медианную ставку транспортного налога РФ.</span></span></span><input name="power" type="number" min="1" value="298" inputmode="numeric"></label>
-                <label><span class="label-with-help">Цена автомобиля, USD <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">Это только цена автомобиля для сравнительного расчёта. Цены услуг БелУчёт зафиксированы в рублях. При цене авто выше $100 000 модель относит автомобиль к повышенной комфортности в Беларуси и применяет коэффициент ×10; применимость правила проверяется отдельно.</span></span></span><input name="price" type="number" min="0" value="90000" inputmode="decimal"></label>
-                <label><span class="label-with-help">Год расчёта РФ <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">Выберите год, в котором сравнивается утильсбор по действующей таблице коэффициентов.</span></span></span><select name="calculationYear"><option value="2026" selected>2026</option><option value="2027">2027</option></select></label>
-              </div>
-              <p class="small form-help">Режим ввоза и статус автомобиля убраны из формы. Предварительный расчёт утильсбора показывает обычный коэффициент; применимость льгот проверяется отдельно по документам.</p>
-            </section>
-
-            <section class="form-section">
-              <div class="form-section-title"><h4><span class="label-with-help">Основание для регистрации в Беларуси <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">Выберите формат действий по оформлению основания и объём нашей помощи. В предварительном расчёте используется РВП на один год; применимость основания проверим по исходным сведениям и документам.</span></span></span></h4><span>Шаг 2 из 2</span></div>
-              <input name="basis" type="hidden" value="rvp">
-              <input name="term" type="hidden" value="1">
-              <div class="tariff-choice-grid">
-                <label class="tariff-choice"><input name="package" type="radio" value="self" checked><span><strong>Самостоятельный</strong><small>Документы и маршрут действий</small><b>295 200 ₽</b></span></label>
-                <label class="tariff-choice"><input name="package" type="radio" value="assisted"><span><strong>С сопровождением</strong><small>Помощь на ключевых этапах</small><b>367 200 ₽</b></span></label>
-                <label class="tariff-choice"><input name="package" type="radio" value="full"><span><strong>Полный цикл</strong><small>Расширенная организация</small><b>471 200 ₽</b></span></label>
-              </div>
-            </section>
-
-            <section class="form-section">
-              <div class="form-section-title"><h4>Период сравнения</h4></div>
+              <div class="form-section-title"><h3>Автомобиль</h3></div>
               <div class="form-grid">
-                <label><span class="label-with-help">Показывать выгоду за <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">К разовой выгоде прибавляется разница транспортного налога РФ и Беларуси за выбранное число лет.</span></span></span><select name="comparisonYears"><option value="1">1 год</option><option value="3" selected>3 года</option><option value="5">5 лет</option></select></label>
+                <label>Мощность, л.с.<input name="power" type="number" min="1" max="2000" step="1" inputmode="numeric" placeholder="Например, 245"></label>
+                <label>Цена автомобиля, USD<input name="price" type="number" min="0" max="10000000" step="1" inputmode="decimal" placeholder="Например, 60 000"></label>
               </div>
-              <details class="calc-disclosure">
-                <summary><span>Уточнить массу автомобиля</span><small data-mass-summary>типовая масса 2 500 кг</small></summary>
-                <div class="disclosure-body"><label><span class="label-with-help">Разрешённая максимальная масса, кг <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">В Беларуси годовая ставка зависит от разрешённой максимальной массы из регистрационного документа. По умолчанию взят типовой ориентир 2 500 кг.</span></span></span><input name="maxMassKg" type="number" min="1" value="2500" inputmode="numeric"></label></div>
-              </details>
-              <details class="calc-disclosure">
-                <summary><span>Дополнительные услуги</span><small data-extras-summary>не выбраны</small></summary>
-                <div class="disclosure-body check-grid">
-                  <label class="checkline"><input name="gai" type="checkbox"><span><span class="label-with-help">Помощь при регистрации <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">Добавляется к тарифу «Самостоятельный». В более полных тарифах помощь включается в согласованный объём сопровождения.</span></span></span><small>Для тарифа «Самостоятельный» — 47 200 ₽</small></span></label>
-                  <label class="checkline"><input name="annual" type="checkbox"><span><span class="label-with-help">Контроль ежегодных платежей <span class="help-tip" tabindex="0">?<span class="help-tip-text" role="tooltip">Календарь, напоминания и организационная проверка ежегодных обязательных платежей. Сами платежи не включены.</span></span></span><small>23 200 ₽/год</small></span></label>
-                </div>
-              </details>
+              <p class="small form-help">Эти данные не меняют цену автомобиля. Они нужны только для оценки сложности сопровождения. Если их не указать, ориентир может не учитывать доплату за сложность.</p>
             </section>
-
-            <div class="calc-controls">
-              <p class="small" data-rate-status>Цены услуг зафиксированы в рублях; валютный курс нужен только для ориентира цены автомобиля.</p>
-              <button class="button secondary small-button" type="button" data-reset-calculator>Сбросить</button>
-            </div>
+            <fieldset class="form-section" style="border:0;padding:0;margin:0;min-inline-size:0">
+              <legend class="form-section-title">Формат сопровождения</legend>
+              <div class="tariff-choice-grid">
+                <label class="tariff-choice"><input name="package" type="radio" value="self" checked><span><strong>Самостоятельный</strong><small>Документы и маршрут действий</small><b data-package-price="self">от 295 200 ₽</b></span></label>
+                <label class="tariff-choice"><input name="package" type="radio" value="assisted"><span><strong>С сопровождением</strong><small>Помощь на ключевых этапах</small><b data-package-price="assisted">от 367 200 ₽</b></span></label>
+                <label class="tariff-choice"><input name="package" type="radio" value="full"><span><strong>Полный цикл</strong><small>Расширенная организация</small><b data-package-price="full">от 471 200 ₽</b></span></label>
+              </div>
+            </fieldset>
+            <details class="calc-disclosure">
+              <summary><span>Дополнительные услуги</span></summary>
+              <div class="disclosure-body check-grid">
+                <label class="checkline"><input name="gai" type="checkbox"><span>Помощь с постановкой на учёт<small data-gai-description>Доплата 47 200 ₽ для самостоятельного тарифа.</small></span></label>
+                <label class="checkline"><input name="annual" type="checkbox"><span>Контроль сроков и платежей<small>Доплата 23 200 ₽ за год сопровождения. Сами платежи не включены.</small></span></label>
+              </div>
+            </details>
+            <div class="calc-controls"><button class="button secondary small-button" type="button" data-reset-calculator>Сбросить</button></div>
           </div>
         </form>
-
-        <aside class="card calc-result" aria-live="polite">
-          <span class="tag" data-out-basis>Самостоятельный · РВП 1 год</span>
-          <div class="result-primary">
-            <span data-total-benefit-label>Итоговая потенциальная выгода</span>
-            <strong data-out-total-benefit>0 ₽</strong>
-            <small>за <span data-out-comparison-period>3 года</span>, после стоимости выбранного сценария</small>
-          </div>
-
-          <div class="result-proof-grid">
-            <div><span data-benefit-label>Разовая выгода после тарифа</span><strong data-out-benefit>0 ₽</strong></div>
-            <div><span>Разница ежегодных платежей</span><strong data-out-annual-period-saving>0 ₽</strong><small>за <span data-out-comparison-period>3 года</span></small></div>
-          </div>
-
-          <div class="result-group">
-            <div class="result-group-title">Разовая экономика</div>
-            <div class="breakdown">
-              <div><span>Утильсбор РФ в альтернативе</span><strong data-out-util-rf>0 ₽</strong></div>
-              <div><span>Стоимость сценария БелУчёт</span><strong data-out-scenario>0 ₽</strong></div>
-              <div class="breakdown-total saving-line"><span>Выгода после стоимости сервиса</span><strong data-out-benefit>0 ₽</strong></div>
-            </div>
-          </div>
-
-          <div class="result-group annual-comparison">
-            <div class="result-group-title">Ежегодные транспортные налоги</div>
-            <div class="breakdown">
-              <div><span>Россия</span><strong data-out-rf-annual-tax>0 ₽/год</strong></div>
-              <div><span>Беларусь</span><strong><span data-out-by-annual-tax-rub>0 ₽/год</span><small data-out-by-annual-tax-byn>0 Br/год</small></strong></div>
-              <div class="breakdown-total saving-line"><span>Разница в год</span><strong data-out-annual-saving>0 ₽</strong></div>
-            </div>
-            <p class="small">РФ: <span data-out-rf-tax-formula></span>. РБ: <span data-out-max-mass></span>, <span data-out-comfort>обычная категория</span>.</p>
-          </div>
-
-          <details class="result-details">
-            <summary>Состав стоимости БелУчёт</summary>
-            <div class="breakdown">
-              <div><span>Выбранный тариф</span><strong data-out-base>0 ₽</strong></div>
-              <div><span>Дополнительные опции</span><strong data-out-extras>0 ₽</strong></div>
-              <div class="hidden" data-complexity-row><span>Расширенная проверка</span><strong data-out-complexity>0 ₽</strong></div>
-            </div>
-          </details>
-
-          <p class="small">Автомобиль: <strong data-out-vehicle></strong>. Утильсбор РФ: <strong data-out-rate-kind></strong>, <span data-out-formula></span>.</p>
-          <div class="result-actions"><a class="button red" href="/contacts/" data-calculator-contact>Получить точный расчёт</a><a class="button secondary" href="/services/" aria-label="Сравнить тарифы">Тарифы</a></div>
+        <aside class="card calc-result" aria-labelledby="estimate-title">
+          <div class="eyebrow">Ориентир, не оферта</div><h2 id="estimate-title">Стоимость услуг</h2>
+          <p class="service-estimate-total" data-out-scenario aria-live="polite">от 295 200 ₽</p>
+          <p>Выбранный формат: <strong data-out-basis>Самостоятельный</strong></p>
+          <dl class="service-estimate-details">
+            <div><dt>Базовая стоимость</dt><dd data-out-base>295 200 ₽</dd></div>
+            <div><dt>Ориентир доплаты за сложность</dt><dd data-out-complexity>0 ₽</dd></div>
+            <div><dt>Выбранные дополнительные услуги</dt><dd data-out-extras>0 ₽</dd></div>
+          </dl>
+          <p class="small">Покупка автомобиля, государственные и таможенные платежи, поездки и другие внешние расходы в расчёт не входят. Окончательную цену и состав работ согласуем до оплаты.</p>
+          <a class="button" href="/contacts/" data-contact-calculation>Передать расчёт на проверку</a>
         </aside>
       </div>
-
-      <section class="section compact calculator-notes">
-        <div class="notice green">Итоговая выгода = разница утильсбора и стоимости сценария + разница транспортного налога за выбранный срок. Цена автомобиля одинакова в обоих сценариях и в результат не прибавляется.</div>
-        <p class="legal-inline"><strong>Калькулятор не является публичной офертой, официальным расчётом обязательных платежей или гарантией экономии.</strong> Цена услуг рассчитана по фиксированному соотношению 80 ₽ за 1 USD и не меняется вслед за курсом в калькуляторе. Результат и применимость сценария проверяются по сведениям и документам; обязательства возникают только из индивидуального договора. <a href="/terms/">Условия оказания и возврата</a>.</p>
-        <p class="small source-note">Ежегодное сравнение предварительное. Для РФ применяется медианная модель ставок 2026 года по диапазону мощности, а не ставка конкретного региона. Для Беларуси по умолчанию используется масса 2 500 кг; цена выше $100 000 автоматически включает модель повышенной комфортности ×10. Фактическую ставку, льготы и официальный перечень проверяем по документам. Источники: <a href="https://www.nalog.gov.ru/rn77/taxation/taxes/tr_ul/" target="_blank" rel="noopener noreferrer">ФНС России</a>, <a href="https://nalog.gov.by/individuals/property_taxation/taxation_of_vehicles/9955/" target="_blank" rel="noopener noreferrer">МНС Беларуси</a>. Формула утильсбора: 20 000 ₽ × коэффициент; источники — <a href="https://government.ru/docs/all/161708/" target="_blank" rel="noopener noreferrer">Постановление № 1713</a> и <a href="https://www.consultant.ru/document/cons_doc_LAW_156832/7d2b30cbf7a938c7edc50c48b7c2474e0143d764/" target="_blank" rel="noopener noreferrer">Постановление № 1291</a>. Итог подтверждается по документам.</p>
-      </section>
     </div>
   </main>
   <footer class="footer"><div class="wrap"><div class="footer-grid"><div><a class="brand" href="/"><span class="brand-mark">БУ</span><span>БелУчёт</span></a><p style="margin-top:16px">Расчёт и сопровождение регистрации автомобиля в Беларуси.</p></div><div><div class="footer-title">Сервис</div><p><a href="/services/">Тарифы</a></p><p><a href="/process/">Как проходит</a></p></div><div><div class="footer-title">Помощь</div><p><a href="/faq/">Вопросы</a></p><p><a href="/contacts/">Заявка</a></p></div><div><div class="footer-title">Документы</div><p><a href="/privacy/">Политика данных</a></p><p><a href="/disclaimer/">Правовая информация</a></p></div></div><div class="footer-bottom"><span>© <span data-current-year></span> БелУчёт</span><span>Расчёт не является публичной офертой.</span></div></div></footer>
