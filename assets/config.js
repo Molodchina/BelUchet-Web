@@ -11,7 +11,7 @@ window.BELUCHET_CONFIG = {
     apiBaseUrl: window.BELUCHET_API_BASE_URL || (["127.0.0.1", "localhost"].includes(window.location.hostname) ? "http://127.0.0.1:8091" : "https://api.beluchet.ru")
   },
   legal: {
-    privacyPolicyVersion: "2026-10-04",
+    privacyPolicyVersion: "2026-11-24",
     personalDataConsentVersion: "2026-08-27",
     disclaimerVersion: "2026-08-27",
     personalDataRegistrationReady: true,
@@ -28,14 +28,14 @@ window.BELUCHET_CONFIG = {
     }
   },
   cookies: {
-    policyVersion: "2026-08-27",
+    policyVersion: "2026-11-24",
     consentName: "beluchet_cookie_consent_v1",
     maxAgeDays: 180
   },
   analytics: {
-    // Activate only after the provider disclosure and a new cookie policy version are published.
+    // Set the public counter number after checking the launch checklist.
     yandexMetrikaId: "",
-    metrikaConsentPolicyVersion: "",
+    metrikaConsentPolicyVersion: "2026-11-24",
     marketingScripts: []
   },
   rates: {

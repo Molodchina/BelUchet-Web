@@ -336,9 +336,22 @@
     // Keep analytics off the intake page and URLs with any dynamic parameters.
     if (location.search || location.hash || !/^\/(?:$|(?:calculator|cases|faq|process|services|thank-you)\/$)/.test(location.pathname)) return;
     let loaded = false;
+    const disableFlag = `disableYaCounter${id}`;
+    const stop = () => {
+      if (!loaded) return;
+      window[disableFlag] = true;
+      location.reload();
+    };
+    const checkConsent = () => {
+      if (!allowsAnalytics(readConsent())) stop();
+    };
+    window.addEventListener("pageshow", checkConsent);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) checkConsent();
+    });
     document.addEventListener("beluchet:consent", (event) => {
       if (!allowsAnalytics(event.detail)) {
-        if (loaded) location.reload(); // Tear down the running third-party script.
+        stop();
         return;
       }
       if (loaded) return;
@@ -349,7 +362,7 @@
         window.ym = queue;
       }
       window.ym(id, "init", { defer: true, webvisor: false, clickmap: false, trackLinks: false,
-        trackHash: false, accurateTrackBounce: false, sendTitle: false, ecommerce: false });
+        trackHash: false, accurateTrackBounce: false, sendTitle: false, ecommerce: false, disableYtm: true });
       window.ym(id, "hit", location.origin + location.pathname, { title: "", referer: location.origin + "/" });
       if (leadSent) window.ym(id, "reachGoal", "lead_success");
       const script = document.createElement("script");
@@ -362,7 +375,16 @@
 
   function activateConsentFeatures(consent) {
     if (!consent || consent.version !== cfg.cookies.policyVersion) return;
-    if (!consent.analytics) deleteOptionalCookies(["_ga", "_gid", "_gat", "_ym_", "yandexuid", "yabs-sid"]);
+    if (!consent.analytics) {
+      deleteOptionalCookies(["_ga", "_gid", "_gat", "_ym_", "yandexuid", "yabs-sid"]);
+      for (const key of ["localStorage", "sessionStorage"]) {
+        try {
+          const storage = window[key];
+          Object.keys(storage).filter((name) => name.startsWith("_ym")).forEach((name) => storage.removeItem(name));
+          if (key === "sessionStorage") storage.removeItem("beluchet-lead-sent");
+        } catch (_) {}
+      }
+    }
     if (!consent.marketing) deleteOptionalCookies(["_fbp", "_gcl_"]);
     document.dispatchEvent(new CustomEvent("beluchet:consent", { detail: consent }));
   }
@@ -399,11 +421,11 @@
     const root = document.createElement("div");
     root.innerHTML = `
       <section class="cookie-banner" data-cookie-banner role="dialog" aria-label="Настройки cookie">
-        <div><strong>Настройки cookie</strong><p>${optionalConfigured ? "Необходимые cookie обеспечивают работу сайта. Аналитику и маркетинговые технологии включаем только с вашего согласия." : "Сейчас сайт использует только необходимый cookie для сохранения вашего выбора. Аналитика и рекламные технологии не подключены."}</p></div>
+        <div><strong>Настройки cookie</strong><p>${analyticsConfigured ? 'Яндекс Метрика помогает измерять посещаемость сайта. Её можно разрешить или отказаться. <a href="/analytics-consent/">Согласие на веб-аналитику</a>.' : "Сайт сохраняет ваш выбор в необходимом cookie. Аналитика не подключена."}</p></div>
         <div class="cookie-actions">
           <button class="button secondary small-button" type="button" data-cookie-essential>${optionalConfigured ? "Только необходимые" : "Понятно"}</button>
           <button class="button secondary small-button" type="button" data-cookie-settings ${optionalConfigured ? "" : "hidden"}>Настроить</button>
-          <button class="button small-button" type="button" data-cookie-all ${optionalConfigured ? "" : "hidden"}>Принять все</button>
+          <button class="button secondary small-button" type="button" data-cookie-all ${analyticsConfigured ? "" : "hidden"}>Разрешить аналитику</button>
         </div>
       </section>
       <dialog class="cookie-dialog" data-cookie-dialog aria-labelledby="cookie-title">
@@ -411,7 +433,7 @@
           <div class="modal-head"><div><div class="eyebrow">Конфиденциальность</div><h2 id="cookie-title">Настройки cookie</h2></div><button class="icon-button" value="cancel" aria-label="Закрыть">×</button></div>
           <div class="cookie-options">
             <label class="cookie-option"><span><strong>Необходимые</strong><small>Выбор настроек и техническая работа интерфейса.</small></span><input type="checkbox" checked disabled></label>
-            <label class="cookie-option"><span><strong>Аналитические</strong><small>${analyticsConfigured ? "Помогают понять, какие страницы и функции полезны." : "Не подключены."}</small></span><input name="analytics" type="checkbox" ${analyticsConfigured ? "" : "disabled"}></label>
+            <label class="cookie-option"><span><strong>Яндекс Метрика</strong><small>${analyticsConfigured ? 'Я даю <a href="/analytics-consent/">согласие на веб-аналитику</a>.' : "Не подключена."}</small></span><input name="analytics" type="checkbox" ${analyticsConfigured ? "" : "disabled"}></label>
             <label class="cookie-option"><span><strong>Маркетинговые</strong><small>${marketingConfigured ? "Используются для оценки рекламных кампаний." : "Не подключены."}</small></span><input name="marketing" type="checkbox" ${marketingConfigured ? "" : "disabled"}></label>
           </div>
           <p class="small">Подробнее — в <a href="/cookies/">политике использования cookie</a>.</p>
@@ -424,12 +446,13 @@
     const settingsForm = $("form", dialog);
     const openSettings = () => {
       const saved = readConsent();
-      settingsForm.elements.analytics.checked = Boolean(saved?.analytics) && !gpcEnabled;
-      settingsForm.elements.marketing.checked = Boolean(saved?.marketing) && !gpcEnabled;
+      settingsForm.elements.analytics.checked = analyticsConfigured && allowsAnalytics(saved);
+      settingsForm.elements.marketing.checked = marketingConfigured && saved?.version === cfg.cookies.policyVersion && saved.marketing === true && !gpcEnabled;
+      dialog.returnValue = "";
       dialog.showModal();
     };
     $("[data-cookie-essential]", root).addEventListener("click", () => { writeConsent({ analytics: false, marketing: false }); banner.hidden = true; });
-    $("[data-cookie-all]", root).addEventListener("click", () => { writeConsent({ analytics: analyticsConfigured && !gpcEnabled, marketing: marketingConfigured && !gpcEnabled }); banner.hidden = true; });
+    $("[data-cookie-all]", root).addEventListener("click", () => { writeConsent({ analytics: analyticsConfigured && !gpcEnabled, marketing: false }); banner.hidden = true; });
     $("[data-cookie-settings]", root).addEventListener("click", openSettings);
     $("[data-cookie-dialog-essential]", root).addEventListener("click", () => { writeConsent({ analytics: false, marketing: false }); dialog.close(); banner.hidden = true; });
     dialog.addEventListener("close", () => {
