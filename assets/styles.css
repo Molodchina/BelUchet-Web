@@ -550,3 +550,18 @@ blockquote { margin: 20px 0; padding: 18px; border-left: 4px solid var(--green);
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition: none !important; }
 }
+
+/* Expert cards and non-blocking form feedback */
+.expert-grid { gap: 18px; }
+.expert-card { display: flex; align-items: center; gap: clamp(14px, 2.5vw, 24px); padding: clamp(16px, 3vw, 28px); }
+.expert-portrait { display: block; width: clamp(72px, 16vw, 140px); height: auto; aspect-ratio: 4 / 5; object-fit: cover; object-position: center; border-radius: 14px; flex: none; }
+.expert-card h3 { margin: 0 0 8px; }
+.expert-card p { margin: 0; color: var(--muted); }
+.lead-feedback:not(:empty) { margin: 12px 0 0; color: #9f2525; font-weight: 600; }
+.lead-feedback:focus { outline: 2px solid currentColor; outline-offset: 4px; }
+#andrey .expert-portrait { object-position: center 27%; }
+#dmitry .expert-portrait { object-position: center 60%; }
+.service-estimate-total { margin: 12px 0 18px; font-size: clamp(1.75rem, 4vw, 2.6rem); font-weight: 750; }
+.service-estimate-details { margin: 16px 0; }
+.service-estimate-details > div { display: flex; justify-content: space-between; gap: 12px; margin: 8px 0; }
+.service-estimate-details dd { margin: 0; white-space: nowrap; font-weight: 650; }
