@@ -34,7 +34,7 @@ window.BELUCHET_CONFIG = {
   },
   analytics: {
     // Set the public counter number after checking the launch checklist.
-    yandexMetrikaId: "",
+    yandexMetrikaId: "114677838",
     metrikaConsentPolicyVersion: "2026-11-24",
     marketingScripts: []
   },
