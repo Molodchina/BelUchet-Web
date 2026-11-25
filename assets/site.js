@@ -333,8 +333,16 @@
         sessionStorage.removeItem("beluchet-lead-sent");
       } catch (_) {}
     }
-    // Keep analytics off the intake page and URLs with any dynamic parameters.
-    if (location.search || location.hash || !/^\/(?:$|(?:calculator|cases|faq|process|services|thank-you)\/$)/.test(location.pathname)) return;
+    // Track only approved campaign parameters. Never expose calculation or form
+    // parameters to the third-party script, even if analytics was accepted.
+    if (location.hash || !/^\/(?:$|(?:calculator|cases|faq|process|services|thank-you)\/$)/.test(location.pathname)) return;
+    const allowedCampaignKeys = new Set([...utmKeys, "yclid"]);
+    const pageUrl = new URL(location.pathname, location.origin);
+    for (const [key, value] of initialSearch) {
+      if (!allowedCampaignKeys.has(key) || pageUrl.searchParams.has(key)) return;
+      if (key === "yclid" ? !/^[A-Za-z0-9_-]{1,256}$/.test(value) : attribution[key] !== value || !value) return;
+      pageUrl.searchParams.set(key, value);
+    }
     let loaded = false;
     const disableFlag = `disableYaCounter${id}`;
     const stop = () => {
@@ -363,7 +371,7 @@
       }
       window.ym(id, "init", { defer: true, webvisor: false, clickmap: false, trackLinks: false,
         trackHash: false, accurateTrackBounce: false, sendTitle: false, ecommerce: false, disableYtm: true });
-      window.ym(id, "hit", location.origin + location.pathname, { title: "", referer: location.origin + "/" });
+      window.ym(id, "hit", pageUrl.href, { title: "", referer: location.origin + "/" });
       if (leadSent) window.ym(id, "reachGoal", "lead_success");
       const script = document.createElement("script");
       script.async = true;
@@ -497,7 +505,7 @@
       const item = cases[Number(button.dataset.caseIndex)];
       const dialog = $("[data-case-dialog]");
       if (!dialog || !item) return;
-      $("[data-case-dialog-content]", dialog).innerHTML = `<div class="case-dialog-grid"><div class="case-gallery">${item.photos.map((photo) => `<img src="${photo.src}" alt="${photo.alt}" loading="lazy">`).join("")}</div><div><span class="tag green">Реальный кейс · ${item.completed}</span><h2>${item.title}</h2><p>${item.description}</p><dl class="case-details"><div><dt>Основание</dt><dd>${item.basis}</dd></div><div><dt>Срок</dt><dd>${item.term}</dd></div><div><dt>Поездки</dt><dd>${item.visits}</dd></div><div><dt>Формат</dt><dd>${item.package}</dd></div></dl>${item.quote ? `<blockquote>${item.quote}</blockquote>` : ""}<a class="button" href="/calculator/">Рассчитать похожий сценарий</a></div></div>`;
+      $("[data-case-dialog-content]", dialog).innerHTML = `<div class="case-dialog-grid"><div class="case-gallery">${item.photos.map((photo) => `<img src="${photo.src}" alt="${photo.alt}" loading="lazy">`).join("")}</div><div><span class="tag green">Реальный кейс · ${item.completed}</span><h2>${item.title}</h2><p>${item.description}</p><dl class="case-details"><div><dt>Основание</dt><dd>${item.basis}</dd></div><div><dt>Срок</dt><dd>${item.term}</dd></div><div><dt>Поездки</dt><dd>${item.visits}</dd></div><div><dt>Формат</dt><dd>${item.package}</dd></div></dl>${item.quote ? `<blockquote>${item.quote}</blockquote>` : ""}<a class="button" href="${withAttribution("/calculator/")}">Рассчитать похожий сценарий</a></div></div>`;
       dialog.showModal();
     }));
   }
